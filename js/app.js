@@ -2,12 +2,75 @@
 const quill = new Quill('#editor-container', {
   modules: {
     toolbar: [
-      ['bold', 'italic', 'underline'],
-      ['image']
+      ['bold', 'italic', 'underline']
+      // 移除图片按钮，改为单独的图片上传区域
     ]
   },
   placeholder: '请输入日志内容...',
   theme: 'snow'
+});
+
+// 图片上传相关变量
+let uploadedImages = [];
+
+// 初始化图片上传功能
+document.getElementById('image-upload').addEventListener('change', async function(e) {
+  const files = e.target.files;
+  if (!files || files.length === 0) return;
+  
+  // 处理所有选择的图片
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i];
+    if (!file.type.startsWith('image/')) continue;
+    
+    try {
+      const base64Image = await convertImageToBase64(file);
+      uploadedImages.push(base64Image);
+      updateImagePreview();
+    } catch (error) {
+      console.error('图片处理失败:', error);
+      showStatus('❌ 图片处理失败', 2000);
+    }
+  }
+  
+  // 清空input，允许重复选择相同文件
+  e.target.value = '';
+});
+
+// 更新图片预览
+function updateImagePreview() {
+  const previewContainer = document.getElementById('image-preview-container');
+  previewContainer.innerHTML = '';
+  
+  uploadedImages.forEach((imgSrc, index) => {
+    const imgContainer = document.createElement('div');
+    imgContainer.className = 'preview-image-container';
+    
+    const img = document.createElement('img');
+    img.src = imgSrc;
+    img.className = 'preview-image';
+    img.onclick = function() { showFullImage(imgSrc); };
+    
+    const removeBtn = document.createElement('button');
+    removeBtn.className = 'remove-image-btn';
+    removeBtn.innerHTML = '×';
+    removeBtn.onclick = function(e) {
+      e.stopPropagation();
+      uploadedImages.splice(index, 1);
+      updateImagePreview();
+    };
+    
+    imgContainer.appendChild(img);
+    imgContainer.appendChild(removeBtn);
+    previewContainer.appendChild(imgContainer);
+  });
+}
+
+// 清除所有图片
+document.getElementById('clear-images').addEventListener('click', function() {
+  uploadedImages = [];
+  updateImagePreview();
+  showStatus('🗑️ 已清除所有图片', 1500);
 });
 
 // 日志存储键名
@@ -65,34 +128,37 @@ document.getElementById('saveLog').addEventListener('click', async () => {
     const delta = quill.getContents();
     const timestamp = new Date().toLocaleString('zh-CN');
     
-    // 处理所有内容（包括文本和图片）
-    const processedOps = await Promise.all(
-      delta.ops.map(async op => {
-        // 如果是图片，转换为Base64
-        if (op.insert && op.insert.image) {
-          return {
-            ...op,
-            insert: {
-              image: await convertImageToBase64(
-                await fetch(op.insert.image).then(r => r.blob())
-              )
-            }
-          };
-        }
-        // 如果是文本或其他内容，保持原样
-        return op;
-      })
-    );
+    // 获取文本内容
+    const textContent = quill.getText();
+    if (textContent.trim() === '' && uploadedImages.length === 0) {
+      showStatus('❌ 请输入日志内容或上传图片', 2000);
+      return;
+    }
+    
+    // 获取HTML内容，保留格式
+    const htmlContent = quill.root.innerHTML;
+    
+    // 创建日志对象，包含文本和图片
+    const logEntry = {
+      timestamp,
+      textContent: textContent,
+      htmlContent: htmlContent,
+      images: uploadedImages,
+      // 保存原始Delta格式，以便将来可能的编辑
+      delta: delta
+    };
 
     const logs = JSON.parse(localStorage.getItem(LOG_STORAGE_KEY) || '[]');
-    logs.unshift({
-      timestamp,
-      content: { ops: processedOps },
-      html: quill.root.innerHTML
-    });
+    logs.unshift(logEntry);
 
     localStorage.setItem(LOG_STORAGE_KEY, JSON.stringify(logs));
     showStatus('✅ 日志保存成功', 2000);
+    
+    // 清空编辑器和图片
+    quill.setText('');
+    uploadedImages = [];
+    updateImagePreview();
+    
     refreshLogList();
   } catch (error) {
     showStatus('❌ 保存失败：' + error.message, 3000);
@@ -112,43 +178,34 @@ function refreshLogList() {
   const listEl = document.getElementById('logList');
   
   listEl.innerHTML = logs.map((log, index) => {
-    // 创建临时DOM元素来解析HTML内容
-    const tempDiv = document.createElement('div');
-    tempDiv.innerHTML = log.html;
+    // 文本内容预览（截取前100个字符）
+    const textPreview = log.textContent ? 
+      (log.textContent.length > 100 ? log.textContent.substring(0, 100) + '...' : log.textContent) : '';
     
-    // 处理图片，创建缩略图
-    const images = tempDiv.querySelectorAll('img');
-    images.forEach(img => {
-      // 为每个图片创建缩略图容器
-      const imgContainer = document.createElement('div');
-      imgContainer.className = 'thumbnail-container';
-      
-      // 创建缩略图
-      const thumbnail = document.createElement('img');
-      thumbnail.src = img.src;
-      thumbnail.className = 'thumbnail';
-      thumbnail.setAttribute('data-original', img.src);
-      thumbnail.onclick = function() { showFullImage(this.getAttribute('data-original')); };
-      
-      imgContainer.appendChild(thumbnail);
-      img.parentNode.replaceChild(imgContainer, img);
-    });
+    // 处理HTML内容，保留格式
+    const formattedHTML = log.htmlContent || '';
     
-    // 提取完整文本（不包括HTML标签）
-    let previewText = tempDiv.textContent;
-    
-    // 构建预览HTML，包含文本和缩略图
-    const previewHTML = tempDiv.innerHTML;
+    // 生成图片缩略图HTML
+    const thumbnailsHTML = log.images && log.images.length > 0 ? 
+      `<div class="thumbnails">${
+        log.images.map((imgSrc, imgIndex) => 
+          `<div class="thumbnail-container">
+            <img src="${imgSrc}" class="thumbnail" 
+                 data-index="${imgIndex}" 
+                 data-log-index="${index}" 
+                 onclick="showFullImage('${imgSrc}')" />
+          </div>`
+        ).join('')
+      }</div>` : '';
     
     return `
       <div class="log-item">
         <time>${log.timestamp}</time>
         <div class="preview">
-          ${previewText}
-          ${images.length > 0 ? '<div class="thumbnails">' + Array.from(images).map(img => 
-            `<div class="thumbnail-container">
-              <img src="${img.src}" class="thumbnail" onclick="showFullImage('${img.src}')" />
-            </div>`).join('') + '</div>' : ''}
+          <div class="content-preview">
+            <div class="text-preview">${textPreview}</div>
+            ${thumbnailsHTML}
+          </div>
         </div>
         <button onclick="deleteLog(${index})">删除</button>
       </div>
