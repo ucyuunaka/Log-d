@@ -2,7 +2,20 @@ class RichEditor {
   constructor() {
     this.editor = document.getElementById('editor');
     this.initPasteHandler();
-    this.initImageUpload();
+    this.uploadBtn = this.initImageUpload();
+    this.setupToolbar();
+  }
+
+  setupToolbar() {
+    const toolbar = document.createElement('div');
+    toolbar.className = 'image-upload-toolbar';
+    
+    const uploadButton = document.createElement('button');
+    uploadButton.textContent = '上传图片';
+    uploadButton.addEventListener('click', () => this.uploadBtn.click());
+    
+    toolbar.appendChild(uploadButton);
+    this.editor.before(toolbar);
   }
 
   initPasteHandler() {
@@ -24,9 +37,7 @@ class RichEditor {
     uploadBtn.style.display = 'none';
     document.body.appendChild(uploadBtn);
 
-    this.editor.addEventListener('click', () => {
-      uploadBtn.click();
-    });
+    // 移除直接绑定到编辑器的点击事件
 
     uploadBtn.addEventListener('change', (e) => {
       const file = e.target.files[0];
