@@ -1,92 +1,138 @@
 // 常量定义
 const LOG_STORAGE_KEY = 'userLogs';
-const MAX_IMAGE_SIZE = 800; // 图片最大尺寸
-const IMAGE_QUALITY = 0.8; // 图片压缩质量
-const STORAGE_LIMIT = 5 * 1024 * 1024; // 5MB存储限制
+const MAX_IMAGE_SIZE = 800;
+const IMAGE_QUALITY = 0.8;
+const STORAGE_LIMIT = 5 * 1024 * 1024;
 
 // DOM元素缓存
-const domElements = {
+const dom = {
   editorContainer: document.getElementById('editor-container'),
   imageUpload: document.getElementById('image-upload'),
+  dropZone: document.getElementById('dropZone'),
   imagePreviewContainer: document.getElementById('image-preview-container'),
   clearImagesBtn: document.getElementById('clear-images'),
   saveLogBtn: document.getElementById('saveLog'),
   clearAllLogsBtn: document.getElementById('clearAllLogs'),
   logList: document.getElementById('logList'),
-  status: document.getElementById('status')
+  wordCount: document.getElementById('wordCount'),
+  searchInput: document.getElementById('searchInput'),
+  dateFilter: document.getElementById('dateFilter'),
+  toastContainer: document.getElementById('toastContainer')
 };
 
-// 状态管理
-let state = {
+// 应用状态
+const state = {
+  quill: null,
   uploadedImages: [],
-  quill: null
+  currentLogs: []
 };
 
 // 初始化应用
 function initApp() {
   initEditor();
   setupEventListeners();
-  refreshLogList();
+  loadLogs();
+  updateWordCount();
 }
 
-// 初始化Quill编辑器
+// 初始化编辑器
 function initEditor() {
-  state.quill = new Quill(domElements.editorContainer, {
+  state.quill = new Quill(dom.editorContainer, {
     modules: {
       toolbar: [
         ['bold', 'italic', 'underline'],
         [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+        ['link', 'image'],
         ['clean']
       ],
       clipboard: {
-        matchVisual: false // 防止自动转换格式
+        matchVisual: false
       }
     },
-    placeholder: '请输入日志内容...',
+    placeholder: '写下今天的所思所想...',
     theme: 'snow'
   });
+
+  // 监听内容变化更新字数
+  state.quill.on('text-change', updateWordCount);
 }
 
 // 设置事件监听器
 function setupEventListeners() {
   // 图片上传
-  domElements.imageUpload.addEventListener('change', handleImageUpload);
+  dom.imageUpload.addEventListener('change', handleImageUpload);
+  
+  // 拖放上传
+  dom.dropZone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    dom.dropZone.classList.add('dragover');
+  });
+  
+  dom.dropZone.addEventListener('dragleave', () => {
+    dom.dropZone.classList.remove('dragover');
+  });
+  
+  dom.dropZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dom.dropZone.classList.remove('dragover');
+    if (e.dataTransfer.files.length) {
+      dom.imageUpload.files = e.dataTransfer.files;
+      handleImageUpload({ target: dom.imageUpload });
+    }
+  });
   
   // 清除图片
-  domElements.clearImagesBtn.addEventListener('click', clearAllImages);
+  dom.clearImagesBtn.addEventListener('click', clearAllImages);
   
   // 保存日志
-  domElements.saveLogBtn.addEventListener('click', saveLog);
+  dom.saveLogBtn.addEventListener('click', saveLog);
   
-  // 窗口关闭前提示保存
+  // 清空日志
+  dom.clearAllLogsBtn.addEventListener('click', confirmClearAllLogs);
+  
+  // 搜索过滤
+  dom.searchInput.addEventListener('input', filterLogs);
+  dom.dateFilter.addEventListener('change', filterLogs);
+  
+  // 窗口关闭前提示
   window.addEventListener('beforeunload', (e) => {
-    const hasContent = state.quill.getText().trim() !== '' || state.uploadedImages.length > 0;
+    const hasContent = state.quill.getText().trim() || state.uploadedImages.length;
     if (hasContent) {
       e.preventDefault();
-      e.returnValue = '您有未保存的日志内容，确定要离开吗？';
+      e.returnValue = '您有未保存的内容，确定要离开吗？';
     }
   });
 }
 
+// 更新字数统计
+function updateWordCount() {
+  const text = state.quill.getText().trim();
+  const count = text ? text.split(/\s+/).length : 0;
+  dom.wordCount.textContent = count;
+}
+
 // 图片上传处理
-async function handleImageUpload(e) {
-  const files = Array.from(e.target.files || []);
-  if (files.length === 0) return;
-  
+async function handleImageUpload(event) {
+  const files = Array.from(event.target.files || []);
+  if (!files.length) return;
+
   try {
-    const imageProcessingPromises = files
+    showToast('正在处理图片...', 'info');
+    
+    const imageProcessing = files
       .filter(file => file.type.startsWith('image/'))
       .map(processImageFile);
     
-    const newImages = await Promise.all(imageProcessingPromises);
+    const newImages = await Promise.all(imageProcessing);
     state.uploadedImages = [...state.uploadedImages, ...newImages];
     updateImagePreview();
-    showStatus(`✅ 成功上传 ${newImages.length} 张图片`, 2000);
+    
+    showToast(`成功上传 ${newImages.length} 张图片`, 'success');
   } catch (error) {
     console.error('图片处理失败:', error);
-    showStatus('❌ 图片处理失败', 2000);
+    showToast('图片处理失败', 'error');
   } finally {
-    e.target.value = ''; // 清空input
+    event.target.value = '';
   }
 }
 
@@ -137,7 +183,7 @@ function calculateResizedDimensions(img) {
 
 // 更新图片预览
 function updateImagePreview() {
-  domElements.imagePreviewContainer.innerHTML = state.uploadedImages
+  dom.imagePreviewContainer.innerHTML = state.uploadedImages
     .map((imgSrc, index) => `
       <div class="preview-image-container">
         <img src="${imgSrc}" class="preview-image" 
@@ -146,7 +192,7 @@ function updateImagePreview() {
         <button class="remove-image-btn" 
                 aria-label="删除图片"
                 onclick="removeImage(${index})">
-          ×
+          <i class="fas fa-times"></i>
         </button>
       </div>
     `)
@@ -157,16 +203,16 @@ function updateImagePreview() {
 window.removeImage = function(index) {
   state.uploadedImages.splice(index, 1);
   updateImagePreview();
-  showStatus('🗑️ 图片已删除', 1500);
+  showToast('图片已删除', 'success');
 };
 
 // 清除所有图片
 function clearAllImages() {
-  if (state.uploadedImages.length === 0) return;
+  if (!state.uploadedImages.length) return;
   
   state.uploadedImages = [];
   updateImagePreview();
-  showStatus('🗑️ 已清除所有图片', 1500);
+  showToast('已清除所有图片', 'success');
 }
 
 // 保存日志
@@ -174,14 +220,14 @@ async function saveLog() {
   try {
     // 验证内容
     const textContent = state.quill.getText().trim();
-    if (textContent === '' && state.uploadedImages.length === 0) {
-      showStatus('❌ 请输入日志内容或上传图片', 2000);
+    if (!textContent && !state.uploadedImages.length) {
+      showToast('请输入日志内容或上传图片', 'warning');
       return;
     }
     
     // 检查存储空间
     if (!hasSufficientStorage()) {
-      showStatus('❌ 存储空间不足，请删除旧日志', 3000);
+      showToast('存储空间不足，请删除旧日志', 'error');
       return;
     }
     
@@ -195,22 +241,25 @@ async function saveLog() {
     
     // 重置状态
     resetEditor();
-    showStatus('✅ 日志保存成功', 2000);
-    refreshLogList();
+    showToast('日志保存成功', 'success');
+    loadLogs();
   } catch (error) {
     console.error('保存日志失败:', error);
-    showStatus(`❌ 保存失败: ${error.message}`, 3000);
+    showToast(`保存失败: ${error.message}`, 'error');
   }
 }
 
 // 创建日志条目
 function createLogEntry() {
   return {
-    timestamp: new Date().toLocaleString('zh-CN'),
+    id: Date.now().toString(),
+    timestamp: new Date().toISOString(),
+    displayTime: new Date().toLocaleString('zh-CN'),
     textContent: state.quill.getText(),
     htmlContent: state.quill.root.innerHTML,
     delta: state.quill.getContents(),
-    images: [...state.uploadedImages]
+    images: [...state.uploadedImages],
+    searchText: state.quill.getText().toLowerCase()
   };
 }
 
@@ -222,7 +271,7 @@ function getLogsFromStorage() {
 // 检查存储空间
 function hasSufficientStorage() {
   const { remaining } = getStorageUsage();
-  return remaining > 0.1; // 保留10%空间
+  return remaining > 0.1;
 }
 
 // 获取存储使用情况
@@ -241,126 +290,148 @@ function resetEditor() {
   state.quill.setContents([]);
   state.uploadedImages = [];
   updateImagePreview();
+  updateWordCount();
 }
 
-// 刷新日志列表
-function refreshLogList() {
-  const logs = getLogsFromStorage();
+// 加载日志
+function loadLogs() {
+  state.currentLogs = getLogsFromStorage();
+  renderLogList(state.currentLogs);
+}
+
+// 过滤日志
+function filterLogs() {
+  const searchTerm = dom.searchInput.value.toLowerCase();
+  const dateFilter = dom.dateFilter.value;
   
-  domElements.logList.innerHTML = logs.length > 0 
-    ? logs.map(renderLogItem).join('')
-    : '<p class="no-logs">暂无日志记录</p>';
-  
-  // 添加图片点击事件
-  document.querySelectorAll('.thumbnail').forEach(img => {
-    img.addEventListener('click', (e) => {
-      e.stopPropagation();
-      showFullImage(img.src);
-    });
+  const filtered = state.currentLogs.filter(log => {
+    const matchesSearch = !searchTerm || 
+      log.searchText.includes(searchTerm) || 
+      log.displayTime.toLowerCase().includes(searchTerm);
+    
+    const matchesDate = !dateFilter || 
+      new Date(log.timestamp).toISOString().split('T')[0] === dateFilter;
+    
+    return matchesSearch && matchesDate;
   });
+  
+  renderLogList(filtered);
 }
 
-// 渲染单个日志项
-function renderLogItem(log, index) {
-  const textPreview = log.textContent
-    ? log.textContent.length > 100 
-      ? log.textContent.substring(0, 100) + '...' 
-      : log.textContent
-    : '[无文本内容]';
-  
-  const thumbnailsHTML = log.images?.length > 0
-    ? `<div class="thumbnails">
-        ${log.images.map((imgSrc, imgIndex) => `
-          <div class="thumbnail-container">
-            <img src="${imgSrc}" class="thumbnail" 
-                 alt="日志图片 ${imgIndex + 1}" 
-                 loading="lazy">
-          </div>
-        `).join('')}
-       </div>`
-    : '';
-  
-  return `
-    <div class="log-item" data-index="${index}">
-      <time datetime="${new Date(log.timestamp).toISOString()}">
-        ${log.timestamp}
-      </time>
-      <div class="content-preview">
-        <div class="text-preview">${escapeHtml(textPreview)}</div>
-        ${thumbnailsHTML}
+// 渲染日志列表
+function renderLogList(logs) {
+  if (logs.length === 0) {
+    dom.logList.innerHTML = `
+      <div class="empty-state">
+        <i class="fas fa-book-open"></i>
+        <p>暂无日志记录</p>
       </div>
-      <button class="btn danger" onclick="deleteLog(${index})" aria-label="删除日志">
-        <span class="icon">🗑️</span> 删除
-      </button>
+    `;
+    return;
+  }
+  
+  dom.logList.innerHTML = logs.map(log => `
+    <div class="log-item" data-id="${log.id}">
+      <time datetime="${log.timestamp}">${log.displayTime}</time>
+      <div class="log-content">
+        ${log.textContent ? `
+          <div class="text-preview">
+            ${log.textContent.length > 200 ? 
+              log.textContent.substring(0, 200) + '...' : 
+              log.textContent}
+          </div>
+        ` : '<p class="no-text">[无文本内容]</p>'}
+        
+        ${log.images?.length ? `
+          <div class="thumbnails">
+            ${log.images.map((img, idx) => `
+              <div class="thumbnail-container">
+                <img src="${img}" class="thumbnail" 
+                     alt="日志图片 ${idx + 1}"
+                     loading="lazy"
+                     onclick="showFullImage('${img}')">
+              </div>
+            `).join('')}
+          </div>
+        ` : ''}
+      </div>
+      <div class="log-actions">
+        <button class="btn outline" onclick="deleteLog('${log.id}')">
+          <i class="fas fa-trash-alt"></i> 删除
+        </button>
+      </div>
     </div>
-  `;
-}
-
-// HTML转义
-function escapeHtml(unsafe) {
-  return unsafe
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
+  `).join('');
 }
 
 // 显示全尺寸图片
 window.showFullImage = function(imageSrc) {
   const modal = document.createElement('div');
   modal.className = 'image-modal';
-  modal.setAttribute('role', 'dialog');
-  modal.setAttribute('aria-modal', 'true');
-  modal.setAttribute('aria-label', '图片预览');
-  
   modal.innerHTML = `
-    <button class="close-modal" aria-label="关闭图片预览">&times;</button>
+    <span class="close-modal">&times;</span>
     <img src="${imageSrc}" class="full-image" alt="全尺寸图片预览">
   `;
   
-  // 关闭功能
-  const close = () => document.body.removeChild(modal);
-  modal.querySelector('.close-modal').addEventListener('click', close);
-  modal.addEventListener('click', (e) => e.target === modal && close());
-  
-  // 键盘导航
-  modal.addEventListener('keydown', (e) => e.key === 'Escape' && close());
-  
   document.body.appendChild(modal);
-  modal.focus();
+  setTimeout(() => modal.classList.add('active'), 10);
+  
+  // 关闭功能
+  const close = () => {
+    modal.classList.remove('active');
+    setTimeout(() => modal.remove(), 300);
+  };
+  
+  modal.querySelector('.close-modal').addEventListener('click', close);
+  modal.addEventListener('click', e => e.target === modal && close());
+  document.addEventListener('keydown', e => e.key === 'Escape' && close());
 };
 
 // 删除日志
-window.deleteLog = function(index) {
+window.deleteLog = function(logId) {
   if (!confirm('确定要删除这条日志吗？此操作不可恢复！')) return;
   
-  const logs = getLogsFromStorage();
-  logs.splice(index, 1);
+  const logs = getLogsFromStorage().filter(log => log.id !== logId);
   localStorage.setItem(LOG_STORAGE_KEY, JSON.stringify(logs));
-  refreshLogList();
-  showStatus('🗑️ 日志已删除', 1500);
+  loadLogs();
+  showToast('日志已删除', 'success');
 };
 
-// 清空所有日志
-window.clearAllLogs = function() {
-  if (!confirm('确定要清空所有历史日志吗？此操作不可恢复！')) return;
+// 确认清空所有日志
+function confirmClearAllLogs() {
+  if (!confirm('确定要清空所有日志吗？此操作不可恢复！')) return;
   
   localStorage.setItem(LOG_STORAGE_KEY, '[]');
-  refreshLogList();
-  showStatus('🗑️ 所有日志已清空', 2000);
+  loadLogs();
+  showToast('所有日志已清空', 'success');
 };
 
-// 显示状态消息
-function showStatus(message, duration = 2000) {
-  domElements.status.textContent = message;
-  domElements.status.style.display = 'block';
+// 显示提示消息
+function showToast(message, type = 'info') {
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  toast.innerHTML = `
+    <i class="fas ${getToastIcon(type)}"></i>
+    <span>${message}</span>
+  `;
   
-  if (duration > 0) {
-    setTimeout(() => {
-      domElements.status.textContent = '';
-      domElements.status.style.display = 'none';
-    }, duration);
+  dom.toastContainer.appendChild(toast);
+  setTimeout(() => toast.classList.add('show'), 10);
+  
+  // 自动消失
+  setTimeout(() => {
+    toast.classList.remove('show');
+    setTimeout(() => toast.remove(), 300);
+  }, 3000);
+}
+
+// 获取提示图标
+function getToastIcon(type) {
+  switch (type) {
+    case 'success': return 'fa-check-circle';
+    case 'error': return 'fa-exclamation-circle';
+    case 'warning': return 'fa-exclamation-triangle';
+    default: return 'fa-info-circle';
   }
 }
 
