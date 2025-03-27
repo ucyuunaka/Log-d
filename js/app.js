@@ -111,13 +111,77 @@ function refreshLogList() {
   const logs = JSON.parse(localStorage.getItem(LOG_STORAGE_KEY) || '[]');
   const listEl = document.getElementById('logList');
   
-  listEl.innerHTML = logs.map((log, index) => `
-    <div class="log-item">
-      <time>${log.timestamp}</time>
-      <div class="preview">${log.html.substring(0, 50)}...</div>
-      <button onclick="deleteLog(${index})">删除</button>
-    </div>
-  `).join('');
+  listEl.innerHTML = logs.map((log, index) => {
+    // 创建临时DOM元素来解析HTML内容
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = log.html;
+    
+    // 处理图片，创建缩略图
+    const images = tempDiv.querySelectorAll('img');
+    images.forEach(img => {
+      // 为每个图片创建缩略图容器
+      const imgContainer = document.createElement('div');
+      imgContainer.className = 'thumbnail-container';
+      
+      // 创建缩略图
+      const thumbnail = document.createElement('img');
+      thumbnail.src = img.src;
+      thumbnail.className = 'thumbnail';
+      thumbnail.setAttribute('data-original', img.src);
+      thumbnail.onclick = function() { showFullImage(this.getAttribute('data-original')); };
+      
+      imgContainer.appendChild(thumbnail);
+      img.parentNode.replaceChild(imgContainer, img);
+    });
+    
+    // 提取完整文本（不包括HTML标签）
+    let previewText = tempDiv.textContent;
+    
+    // 构建预览HTML，包含文本和缩略图
+    const previewHTML = tempDiv.innerHTML;
+    
+    return `
+      <div class="log-item">
+        <time>${log.timestamp}</time>
+        <div class="preview">
+          ${previewText}
+          ${images.length > 0 ? '<div class="thumbnails">' + Array.from(images).map(img => 
+            `<div class="thumbnail-container">
+              <img src="${img.src}" class="thumbnail" onclick="showFullImage('${img.src}')" />
+            </div>`).join('') + '</div>' : ''}
+        </div>
+        <button onclick="deleteLog(${index})">删除</button>
+      </div>
+    `;
+  }).join('');
+}
+
+// 显示全尺寸图片
+window.showFullImage = function(imageSrc) {
+  // 创建模态框
+  const modal = document.createElement('div');
+  modal.className = 'image-modal';
+  
+  // 创建图片元素
+  const fullImg = document.createElement('img');
+  fullImg.src = imageSrc;
+  fullImg.className = 'full-image';
+  
+  // 创建关闭按钮
+  const closeBtn = document.createElement('span');
+  closeBtn.className = 'close-modal';
+  closeBtn.innerHTML = '&times;';
+  closeBtn.onclick = function() { document.body.removeChild(modal); };
+  
+  // 点击模态框背景也可关闭
+  modal.onclick = function(e) {
+    if (e.target === modal) document.body.removeChild(modal);
+  };
+  
+  // 组装并添加到页面
+  modal.appendChild(closeBtn);
+  modal.appendChild(fullImg);
+  document.body.appendChild(modal);
 }
 
 // 删除日志
@@ -142,3 +206,12 @@ function getStorageUsage() {
     remaining: (5 * 1024 * 1024 - used) / (5 * 1024 * 1024)
   };
 }
+
+// 清空所有日志
+window.clearAllLogs = () => {
+  if (confirm('确定要清空所有历史日志吗？此操作不可恢复！')) {
+    localStorage.setItem(LOG_STORAGE_KEY, '[]');
+    refreshLogList();
+    showStatus('🗑️ 所有日志已清空', 2000);
+  }
+};
