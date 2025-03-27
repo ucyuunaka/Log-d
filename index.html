@@ -3,49 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>日志记录工具</title>
-    <link rel="stylesheet" href="css/main.css">
+    <title>日志记录系统</title>
+    <link rel="stylesheet" href="css/style.css">
+    <!-- 引入富文本编辑器库 -->
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
 </head>
 <body>
     <div class="container">
-        <!-- 标签管理侧边栏 -->
-        <aside class="sidebar" id="tagSidebar">
-            <div class="tag-header">
-                <h2>标签管理</h2>
-                <button id="newTagBtn">+ 新建标签</button>
-            </div>
-            <div id="tagList" class="tag-list"></div>
-        </aside>
-
-        <!-- 主编辑器区域 -->
-        <main class="editor-area">
-            <div class="editor-toolbar">
-                <button class="template-btn" data-template="task">任务模板</button>
-                <button class="template-btn" data-template="todo">待办模板</button>
-                <button class="template-btn" data-template="followup">跟进模板</button>
-            </div>
-            <div 
-                class="editor-content" 
-                id="editor"
-                contenteditable="true"
-                placeholder="开始记录日志..."
-            ></div>
-            <div class="editor-footer">
-                <button id="saveLog">保存日志</button>
-            </div>
+        <header>
+            <h1>日志记录系统</h1>
+            <div id="file-status" class="status-indicator">文件状态: <span id="file-status-text">检查中...</span></div>
+        </header>
+        
+        <main>
+            <section class="editor-section">
+                <h2>编辑日志</h2>
+                <div id="editor-container">
+                    <!-- 富文本编辑器将在这里初始化 -->
+                    <div id="editor"></div>
+                </div>
+                <div class="editor-controls">
+                    <button id="save-log" class="btn primary">记录日志</button>
+                    <button id="clear-editor" class="btn secondary">清空编辑器</button>
+                </div>
+            </section>
         </main>
-
-        <!-- 日志列表侧边栏 -->
-        <aside class="sidebar" id="logSidebar">
+        
+        <aside>
             <h2>日志列表</h2>
             <div id="logList" class="log-list"></div>
         </aside>
     </div>
 
-    <script src="js/tags.js"></script>
+    <!-- 引入富文本编辑器库 -->
+    <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+    <!-- 自定义脚本 -->
     <script src="js/editor.js"></script>
-    <script src="js/templates.js"></script>
     <script src="js/storage.js"></script>
+    <script src="js/fileSystem.js"></script>
     <script src="js/main.js"></script>
 </body>
 </html>
