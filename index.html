@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>日志记录工具</title>
+    <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+    <div class="container">
+        <!-- 标签管理侧边栏 -->
+        <aside class="sidebar" id="tagSidebar">
+            <div class="tag-header">
+                <h2>标签管理</h2>
+                <button id="newTagBtn">+ 新建标签</button>
+            </div>
+            <div id="tagList" class="tag-list"></div>
+        </aside>
+
+        <!-- 主编辑器区域 -->
+        <main class="editor-area">
+            <div class="editor-toolbar">
+                <button class="template-btn" data-template="task">任务模板</button>
+                <button class="template-btn" data-template="todo">待办模板</button>
+                <button class="template-btn" data-template="followup">跟进模板</button>
+            </div>
+            <div 
+                class="editor-content" 
+                id="editor"
+                contenteditable="true"
+                placeholder="开始记录日志..."
+            ></div>
+            <div class="editor-footer">
+                <button id="saveLog">保存日志</button>
+            </div>
+        </main>
+
+        <!-- 日志列表侧边栏 -->
+        <aside class="sidebar" id="logSidebar">
+            <h2>日志列表</h2>
+            <div id="logList" class="log-list"></div>
+        </aside>
+    </div>
+
+    <script src="js/tags.js"></script>
+    <script src="js/editor.js"></script>
+    <script src="js/templates.js"></script>
+    <script src="js/storage.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
