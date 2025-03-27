@@ -2,7 +2,7 @@
 const LOG_STORAGE_KEY = 'userLogs';
 const MAX_IMAGE_SIZE = 800;
 const IMAGE_QUALITY = 0.8;
-const STORAGE_LIMIT = 5 * 1024 * 1024;
+const STORAGE_LIMIT = 5 * 1024 * 1024; // 5MB
 
 // DOM元素缓存
 const dom = {
@@ -24,7 +24,40 @@ const dom = {
 const state = {
   quill: null,
   uploadedImages: [],
-  currentLogs: []
+  currentLogs: [],
+  activeModal: null
+};
+
+// 工具函数
+const utils = {
+  debounce(func, wait) {
+    let timeout;
+    return function(...args) {
+      clearTimeout(timeout);
+      timeout = setTimeout(() => func.apply(this, args), wait);
+    };
+  },
+
+  formatDate(date) {
+    return new Date(date).toLocaleString('zh-CN', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    });
+  },
+
+  getImageOrientation(file) {
+    // 实现EXIF方向检测
+    return 1; // 简化版，实际项目应完整实现
+  },
+
+  fixImageOrientation(ctx, img, orientation) {
+    // 根据方向调整图片
+    ctx.drawImage(img, 0, 0);
+  }
 };
 
 // 初始化应用
@@ -53,8 +86,7 @@ function initEditor() {
     theme: 'snow'
   });
 
-  // 监听内容变化更新字数
-  state.quill.on('text-change', updateWordCount);
+  state.quill.on('text-change', utils.debounce(updateWordCount, 300));
 }
 
 // 设置事件监听器
@@ -91,8 +123,23 @@ function setupEventListeners() {
   dom.clearAllLogsBtn.addEventListener('click', confirmClearAllLogs);
   
   // 搜索过滤
-  dom.searchInput.addEventListener('input', filterLogs);
+  dom.searchInput.addEventListener('input', utils.debounce(filterLogs, 300));
   dom.dateFilter.addEventListener('change', filterLogs);
+  
+  // 图片预览点击事件委托
+  dom.logList.addEventListener('click', (e) => {
+    if (e.target.classList.contains('thumbnail')) {
+      showFullImage(e.target.dataset.fullimg);
+    }
+  });
+  
+  // 日志删除事件委托
+  dom.logList.addEventListener('click', (e) => {
+    if (e.target.closest('.log-actions button')) {
+      const logId = e.target.closest('.log-item').dataset.id;
+      deleteLog(logId);
+    }
+  });
   
   // 窗口关闭前提示
   window.addEventListener('beforeunload', (e) => {
@@ -119,18 +166,28 @@ async function handleImageUpload(event) {
   try {
     showToast('正在处理图片...', 'info');
     
-    const imageProcessing = files
-      .filter(file => file.type.startsWith('image/'))
-      .map(processImageFile);
+    const validFiles = files.filter(file => {
+      if (!file.type.startsWith('image/')) {
+        showToast(`跳过非图片文件: ${file.name}`, 'warning');
+        return false;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        showToast(`图片过大已跳过: ${file.name}`, 'warning');
+        return false;
+      }
+      return true;
+    });
     
+    const imageProcessing = validFiles.map(processImageFile);
     const newImages = await Promise.all(imageProcessing);
+    
     state.uploadedImages = [...state.uploadedImages, ...newImages];
     updateImagePreview();
     
     showToast(`成功上传 ${newImages.length} 张图片`, 'success');
   } catch (error) {
     console.error('图片处理失败:', error);
-    showToast('图片处理失败', 'error');
+    showToast('图片处理失败: ' + error.message, 'error');
   } finally {
     event.target.value = '';
   }
@@ -153,7 +210,13 @@ async function processImageFile(file) {
         canvas.height = height;
         
         const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, width, height);
+        const orientation = utils.getImageOrientation(file);
+        
+        if (orientation && orientation > 1) {
+          utils.fixImageOrientation(ctx, img, orientation);
+        } else {
+          ctx.drawImage(img, 0, 0, width, height);
+        }
         
         resolve(canvas.toDataURL('image/jpeg', IMAGE_QUALITY));
       } catch (error) {
@@ -161,7 +224,7 @@ async function processImageFile(file) {
       }
     };
     
-    reader.onerror = reject;
+    reader.onerror = () => reject(new Error('图片读取失败'));
     reader.readAsDataURL(file);
   });
 }
@@ -188,23 +251,36 @@ function updateImagePreview() {
       <div class="preview-image-container">
         <img src="${imgSrc}" class="preview-image" 
              alt="预览图片 ${index + 1}" 
-             onclick="showFullImage('${imgSrc}')">
+             data-fullimg="${imgSrc}">
         <button class="remove-image-btn" 
                 aria-label="删除图片"
-                onclick="removeImage(${index})">
+                data-index="${index}">
           <i class="fas fa-times"></i>
         </button>
       </div>
     `)
     .join('');
+  
+  // 添加删除按钮事件
+  dom.imagePreviewContainer.querySelectorAll('.remove-image-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      removeImage(parseInt(btn.dataset.index));
+    });
+  });
+  
+  // 添加预览点击事件
+  dom.imagePreviewContainer.querySelectorAll('.preview-image').forEach(img => {
+    img.addEventListener('click', () => showFullImage(img.dataset.fullimg));
+  });
 }
 
 // 删除单张图片
-window.removeImage = function(index) {
+function removeImage(index) {
   state.uploadedImages.splice(index, 1);
   updateImagePreview();
   showToast('图片已删除', 'success');
-};
+}
 
 // 清除所有图片
 function clearAllImages() {
@@ -218,26 +294,34 @@ function clearAllImages() {
 // 保存日志
 async function saveLog() {
   try {
-    // 验证内容
     const textContent = state.quill.getText().trim();
     if (!textContent && !state.uploadedImages.length) {
       showToast('请输入日志内容或上传图片', 'warning');
       return;
     }
     
-    // 检查存储空间
-    if (!hasSufficientStorage()) {
+    // 创建日志对象并估算大小
+    const logEntry = createLogEntry();
+    const entrySize = new Blob([JSON.stringify(logEntry)]).size;
+    
+    if (!hasSufficientStorage(entrySize)) {
       showToast('存储空间不足，请删除旧日志', 'error');
       return;
     }
     
-    // 创建日志对象
-    const logEntry = createLogEntry();
-    
     // 保存到本地存储
     const logs = getLogsFromStorage();
     logs.unshift(logEntry);
-    localStorage.setItem(LOG_STORAGE_KEY, JSON.stringify(logs));
+    
+    try {
+      localStorage.setItem(LOG_STORAGE_KEY, JSON.stringify(logs));
+    } catch (error) {
+      if (error.name === 'QuotaExceededError') {
+        showToast('存储空间已满，无法保存', 'error');
+        return;
+      }
+      throw error;
+    }
     
     // 重置状态
     resetEditor();
@@ -254,7 +338,7 @@ function createLogEntry() {
   return {
     id: Date.now().toString(),
     timestamp: new Date().toISOString(),
-    displayTime: new Date().toLocaleString('zh-CN'),
+    displayTime: utils.formatDate(new Date()),
     textContent: state.quill.getText(),
     htmlContent: state.quill.root.innerHTML,
     delta: state.quill.getContents(),
@@ -265,24 +349,34 @@ function createLogEntry() {
 
 // 从存储获取日志
 function getLogsFromStorage() {
-  return JSON.parse(localStorage.getItem(LOG_STORAGE_KEY) || '[]');
+  try {
+    return JSON.parse(localStorage.getItem(LOG_STORAGE_KEY) || '[]');
+  } catch (error) {
+    console.error('解析日志数据失败:', error);
+    return [];
+  }
 }
 
 // 检查存储空间
-function hasSufficientStorage() {
-  const { remaining } = getStorageUsage();
-  return remaining > 0.1;
+function hasSufficientStorage(requiredSize = 100 * 1024) {
+  const { used, total } = getStorageUsage();
+  return (total - used) > requiredSize;
 }
 
 // 获取存储使用情况
 function getStorageUsage() {
-  const logs = getLogsFromStorage();
-  const used = encodeURIComponent(JSON.stringify(logs)).length;
-  return {
-    used,
-    total: STORAGE_LIMIT,
-    remaining: (STORAGE_LIMIT - used) / STORAGE_LIMIT
-  };
+  try {
+    const logs = getLogsFromStorage();
+    const used = new Blob([JSON.stringify(logs)]).size;
+    return {
+      used,
+      total: STORAGE_LIMIT,
+      remaining: (STORAGE_LIMIT - used) / STORAGE_LIMIT
+    };
+  } catch (error) {
+    console.error('存储空间计算失败:', error);
+    return { used: 0, total: STORAGE_LIMIT, remaining: 1 };
+  }
 }
 
 // 重置编辑器状态
@@ -330,42 +424,68 @@ function renderLogList(logs) {
     return;
   }
   
-  dom.logList.innerHTML = logs.map(log => `
-    <div class="log-item" data-id="${log.id}">
+  const fragment = document.createDocumentFragment();
+  
+  logs.forEach(log => {
+    const logItem = document.createElement('div');
+    logItem.className = 'log-item';
+    logItem.dataset.id = log.id;
+    
+    logItem.innerHTML = `
       <time datetime="${log.timestamp}">${log.displayTime}</time>
       <div class="log-content">
-        ${log.textContent ? `
-          <div class="text-preview">
-            ${log.textContent.length > 200 ? 
-              log.textContent.substring(0, 200) + '...' : 
-              log.textContent}
-          </div>
-        ` : '<p class="no-text">[无文本内容]</p>'}
-        
-        ${log.images?.length ? `
-          <div class="thumbnails">
-            ${log.images.map((img, idx) => `
-              <div class="thumbnail-container">
-                <img src="${img}" class="thumbnail" 
-                     alt="日志图片 ${idx + 1}"
-                     loading="lazy"
-                     onclick="showFullImage('${img}')">
-              </div>
-            `).join('')}
-          </div>
-        ` : ''}
+        ${renderTextContent(log)}
+        ${renderImages(log)}
       </div>
       <div class="log-actions">
-        <button class="btn outline" onclick="deleteLog('${log.id}')">
+        <button class="btn outline">
           <i class="fas fa-trash-alt"></i> 删除
         </button>
       </div>
+    `;
+    
+    fragment.appendChild(logItem);
+  });
+  
+  dom.logList.innerHTML = '';
+  dom.logList.appendChild(fragment);
+}
+
+function renderTextContent(log) {
+  if (!log.textContent) return '<p class="no-text">[无文本内容]</p>';
+  
+  const previewText = log.textContent.length > 200 
+    ? log.textContent.substring(0, 200) + '...' 
+    : log.textContent;
+  
+  return `<div class="text-preview">${previewText}</div>`;
+}
+
+function renderImages(log) {
+  if (!log.images?.length) return '';
+  
+  return `
+    <div class="thumbnails">
+      ${log.images.map((img, idx) => `
+        <div class="thumbnail-container">
+          <img src="${img}" class="thumbnail" 
+               alt="日志图片 ${idx + 1}"
+               loading="lazy"
+               data-fullimg="${img}">
+        </div>
+      `).join('')}
     </div>
-  `).join('');
+  `;
 }
 
 // 显示全尺寸图片
-window.showFullImage = function(imageSrc) {
+function showFullImage(imageSrc) {
+  // 关闭现有模态框
+  if (state.activeModal) {
+    document.body.removeChild(state.activeModal);
+    state.activeModal = null;
+  }
+  
   const modal = document.createElement('div');
   modal.className = 'image-modal';
   modal.innerHTML = `
@@ -374,28 +494,44 @@ window.showFullImage = function(imageSrc) {
   `;
   
   document.body.appendChild(modal);
+  state.activeModal = modal;
+  
   setTimeout(() => modal.classList.add('active'), 10);
   
   // 关闭功能
   const close = () => {
     modal.classList.remove('active');
-    setTimeout(() => modal.remove(), 300);
+    setTimeout(() => {
+      if (modal.parentNode) {
+        document.body.removeChild(modal);
+      }
+      state.activeModal = null;
+    }, 300);
   };
   
   modal.querySelector('.close-modal').addEventListener('click', close);
   modal.addEventListener('click', e => e.target === modal && close());
-  document.addEventListener('keydown', e => e.key === 'Escape' && close());
-};
+  
+  const keyHandler = e => {
+    if (e.key === 'Escape') close();
+  };
+  
+  document.addEventListener('keydown', keyHandler);
+  
+  // 清理事件监听器
+  modal._closeHandler = close;
+  modal._keyHandler = keyHandler;
+}
 
 // 删除日志
-window.deleteLog = function(logId) {
+function deleteLog(logId) {
   if (!confirm('确定要删除这条日志吗？此操作不可恢复！')) return;
   
   const logs = getLogsFromStorage().filter(log => log.id !== logId);
   localStorage.setItem(LOG_STORAGE_KEY, JSON.stringify(logs));
   loadLogs();
   showToast('日志已删除', 'success');
-};
+}
 
 // 确认清空所有日志
 function confirmClearAllLogs() {
@@ -404,7 +540,7 @@ function confirmClearAllLogs() {
   localStorage.setItem(LOG_STORAGE_KEY, '[]');
   loadLogs();
   showToast('所有日志已清空', 'success');
-};
+}
 
 // 显示提示消息
 function showToast(message, type = 'info') {
@@ -421,7 +557,11 @@ function showToast(message, type = 'info') {
   // 自动消失
   setTimeout(() => {
     toast.classList.remove('show');
-    setTimeout(() => toast.remove(), 300);
+    setTimeout(() => {
+      if (toast.parentNode) {
+        dom.toastContainer.removeChild(toast);
+      }
+    }, 300);
   }, 3000);
 }
 
