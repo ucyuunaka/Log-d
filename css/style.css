@@ -1,215 +1,158 @@
+/* 变量定义 */
 :root {
-  --primary-color: #2196F3;
-  --hover-color: #1976D2;
+  --primary-gradient: linear-gradient(135deg, #2B32B2 0%, #1488CC 100%);
+  --danger-gradient: linear-gradient(135deg, #B23232 0%, #CC1414 100%);
+  --dark-bg: #0a0a0a;
+  --glass-bg: rgba(43, 51, 178, 0.15);
+  --text-primary: #e0e0e0;
+  --text-secondary: rgba(224, 224, 224, 0.8);
+  --border-radius: 8px;
+  --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  --transition: all 0.3s ease;
 }
 
+/* 基础样式 */
 body {
-  font-family: 'Segoe UI', sans-serif;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
   margin: 0;
   padding: 20px;
-  background-color: #f5f5f5;
+  background: var(--dark-bg) var(--primary-gradient);
+  background-attachment: fixed;
+  color: var(--text-primary);
+  line-height: 1.6;
 }
 
 .container {
   max-width: 800px;
   margin: 0 auto;
+  padding: 0 15px;
 }
 
+/* 编辑器样式 */
 #editor-container {
   height: 300px;
   margin: 20px 0;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  background: var(--glass-bg);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
 }
 
-.toolbar {
-  display: flex;
-  gap: 10px;
-  margin: 15px 0;
-}
-
+/* 按钮样式 */
 .btn {
-  padding: 8px 16px;
+  padding: 10px 16px;
   border: none;
-  border-radius: 4px;
+  border-radius: var(--border-radius);
   cursor: pointer;
-  transition: all 0.3s;
+  transition: var(--transition);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+  box-shadow: var(--box-shadow);
 }
 
 .btn.primary {
-  background: var(--primary-color);
+  background: var(--primary-gradient);
   color: white;
 }
 
-.btn.primary:hover {
-  background: var(--hover-color);
+.btn.danger {
+  background: var(--danger-gradient);
+  color: white;
 }
 
-#logList {
-  margin-top: 30px;
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 8px rgba(0, 0, 0, 0.3);
 }
 
-.log-item {
-  background: white;
-  padding: 15px;
-  margin: 10px 0;
-  border-radius: 6px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-  display: flex;
-  align-items: center;
-  gap: 15px;
+.btn:active {
+  transform: translateY(0);
 }
 
-.log-item time {
-  color: #666;
-  min-width: 160px;
-}
-
-.content-preview {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.text-preview {
-  white-space: pre-wrap;
-  color: #444;
-  line-height: 1.6;
-}
-
-/* 日志内容样式，保留换行和格式 */
-.log-content {
-  white-space: pre-wrap;
-  word-break: break-word;
-  line-height: 1.5;
-}
-
-/* 缩略图样式 */
-.thumbnails {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-  gap: 12px;
-  padding: 8px 0;
-}
-
-.thumbnail-container {
-  display: inline-block;
-  margin: 5px;
-}
-
-.thumbnail {
-  max-width: 100px;
-  max-height: 100px;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: transform 0.2s;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-}
-
-/* 图片上传区域样式 */
-.image-upload-area {
-  background: white;
-  padding: 15px;
-  border-radius: 8px;
+/* 图片上传区域 */
+.image-upload-section {
+  background: var(--glass-bg);
+  backdrop-filter: blur(10px);
+  padding: 20px;
+  border-radius: var(--border-radius);
   margin: 20px 0;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.image-input {
-  display: none;
+.upload-controls {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
 #image-preview-container {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 12px;
   margin: 15px 0;
 }
 
-.preview-image-container {
-  position: relative;
-  width: 120px;
-  height: 120px;
-  border-radius: 4px;
-  overflow: hidden;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+/* 日志项样式 */
+.log-item {
+  background: rgba(43, 51, 178, 0.1);
+  backdrop-filter: blur(5px);
+  padding: 15px;
+  margin: 15px 0;
+  border-radius: var(--border-radius);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: var(--transition);
 }
 
-.preview-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  cursor: pointer;
+.log-item:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
 }
 
-.remove-image-btn {
-  position: absolute;
-  top: 5px;
-  right: 5px;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background: rgba(0, 0, 0, 0.5);
-  color: white;
-  border: none;
-  font-size: 16px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.2s;
-}
-
-.remove-image-btn:hover {
-  background: rgba(0, 0, 0, 0.7);
-}
-
-.thumbnail:hover {
-  transform: scale(1.05);
-}
-
-#status {
-  color: #4CAF50;
-  padding: 5px 10px;
-}
-
-/* 图片模态框样式 */
-.image-modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.8);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-}
-
-.full-image {
-  max-width: 90%;
-  max-height: 90%;
-  object-fit: contain;
-  border: 2px solid white;
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
-}
-
-.close-modal {
-  position: absolute;
-  top: 20px;
-  right: 30px;
-  color: white;
-  font-size: 40px;
-  font-weight: bold;
-  cursor: pointer;
-}
-
+/* 响应式设计 */
 @media (max-width: 600px) {
-  .log-item {
-    flex-direction: column;
-    align-items: start;
+  .container {
+    padding: 0 10px;
   }
+
+  .upload-controls {
+    flex-direction: column;
+  }
+
+  .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* 辅助类 */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* 动画效果 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.log-item {
+  animation: fadeIn 0.3s ease forwards;
 }
