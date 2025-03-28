@@ -48,6 +48,12 @@ class EventHandlers {
     
     // 窗口关闭前提示
     window.addEventListener('beforeunload', this.handleBeforeUnload.bind(this));
+    
+    // 导出日志
+    this.dom.exportLogs.addEventListener('click', this.handleExportLogs.bind(this));
+    
+    // 导入日志
+    this.dom.importLogs.addEventListener('click', this.handleImportLogs.bind(this));
   }
 
   // 拖放处理
@@ -444,6 +450,46 @@ class EventHandlers {
       e.preventDefault();
       e.returnValue = '您有未保存的内容，确定要离开吗？';
     }
+  }
+
+  // 处理导出日志
+  handleExportLogs() {
+    const result = utils.exportLogsToJson(`log-d-backup-${new Date().toISOString().slice(0, 10)}.json`);
+    showToast(result.message, result.success ? 'success' : 'warning', this.dom.toastContainer);
+  }
+
+  // 处理导入日志
+  handleImportLogs() {
+    // 创建隐藏的文件输入元素
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = '.json';
+    fileInput.style.display = 'none';
+    document.body.appendChild(fileInput);
+    
+    fileInput.onchange = async (e) => {
+      if (e.target.files.length === 0) return;
+      
+      try {
+        showToast('正在导入日志...', 'info', this.dom.toastContainer);
+        
+        // 确认导入模式
+        const replaceAll = confirm('是否完全替换当前日志？\n- 点击"确定"将替换所有现有日志\n- 点击"取消"将合并导入数据和现有数据');
+        const mode = replaceAll ? 'replace' : 'merge';
+        
+        const result = await utils.importLogsFromJson(e.target.files[0], mode);
+        showToast(result.message, 'success', this.dom.toastContainer);
+        
+        // 重新加载日志列表
+        this.loadLogs();
+      } catch (error) {
+        showToast(error.message, 'error', this.dom.toastContainer);
+      } finally {
+        document.body.removeChild(fileInput);
+      }
+    };
+    
+    fileInput.click();
   }
 }
 

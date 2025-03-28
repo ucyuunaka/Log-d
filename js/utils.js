@@ -66,6 +66,94 @@ export function hasSufficientStorage(requiredSize = 100 * 1024) {
   return (total - used) > requiredSize;
 }
 
+// 导出日志数据到JSON文件
+export function exportLogsToJson(filename = 'log-d-backup.json') {
+  try {
+    const logs = getLogsFromStorage();
+    if (logs.length === 0) {
+      return { success: false, message: '没有可导出的日志数据' };
+    }
+    
+    const dataStr = JSON.stringify(logs, null, 2);
+    const blob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    return { success: true, message: `成功导出 ${logs.length} 条日志` };
+  } catch (error) {
+    console.error('导出日志失败:', error);
+    return { success: false, message: `导出失败: ${error.message}` };
+  }
+}
+
+// 从JSON文件导入日志数据
+export function importLogsFromJson(file, mode = 'merge') {
+  return new Promise((resolve, reject) => {
+    try {
+      const reader = new FileReader();
+      
+      reader.onload = function(e) {
+        try {
+          const importedLogs = JSON.parse(e.target.result);
+          
+          if (!Array.isArray(importedLogs)) {
+            reject({ success: false, message: '导入文件格式错误，不是有效的日志数据' });
+            return;
+          }
+          
+          // 确保每个日志条目都有合法的ID
+          const validatedLogs = importedLogs.map(log => {
+            if (!log.id) log.id = Date.now().toString() + Math.random().toString(36).substr(2, 9);
+            return log;
+          });
+          
+          let currentLogs = getLogsFromStorage();
+          let resultLogs = [];
+          
+          if (mode === 'replace') {
+            // 完全替换当前日志
+            resultLogs = validatedLogs;
+          } else if (mode === 'merge') {
+            // 合并日志，避免ID重复
+            const existingIds = new Set(currentLogs.map(log => log.id));
+            const newLogs = validatedLogs.filter(log => !existingIds.has(log.id));
+            resultLogs = [...currentLogs, ...newLogs];
+            
+            // 按时间戳排序
+            resultLogs.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+          }
+          
+          localStorage.setItem(LOG_STORAGE_KEY, JSON.stringify(resultLogs));
+          
+          resolve({ 
+            success: true, 
+            message: `成功导入 ${validatedLogs.length} 条日志记录`,
+            count: validatedLogs.length
+          });
+        } catch (parseError) {
+          reject({ success: false, message: `解析导入文件失败: ${parseError.message}` });
+        }
+      };
+      
+      reader.onerror = function() {
+        reject({ success: false, message: '读取文件时出错' });
+      };
+      
+      reader.readAsText(file);
+      
+    } catch (error) {
+      reject({ success: false, message: `导入过程出错: ${error.message}` });
+    }
+  });
+}
+
 // 提示消息功能
 export function showToast(message, type = 'info', container) {
   const toast = document.createElement('div');
