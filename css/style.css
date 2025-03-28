@@ -1,27 +1,27 @@
 /* 全局变量 */
 :root {
   /* 颜色 */
-  --primary-color: #4a6bff;
-  --primary-light: #6a8cff;
-  --primary-dark: #3a5bef;
-  --danger-color: #ff4757;
-  --success-color: #2ed573;
-  --warning-color: #ffa502;
+  --primary-color: #5E72E4;
+  --primary-light: rgba(94, 114, 228, 0.1);
+  --primary-dark: #4A5CD4;
+  --danger-color: #F5365C;
+  --success-color: #2DCE89;
+  --warning-color: #FB6340;
   --info-color: #1e90ff;
 
   /* 背景 */
-  --bg-primary: #1a1a2e;
-  --bg-secondary: #16213e;
-  --bg-card: rgba(255, 255, 255, 0.08);
-  --bg-card-hover: rgba(255, 255, 255, 0.12);
+  --bg-primary: #1A1A2E;
+  --bg-secondary: #16213E;
+  --bg-card: rgba(26, 32, 44, 0.95);
+  --bg-card-hover: rgba(255, 255, 255, 0.05);
 
   /* 文本 */
-  --text-primary: #f1f1f1;
-  --text-secondary: rgba(241, 241, 241, 0.7);
-  --text-disabled: rgba(241, 241, 241, 0.5);
+  --text-primary: #E2E8F0;
+  --text-secondary: rgba(226, 232, 240, 0.7);
+  --text-disabled: rgba(226, 232, 240, 0.5);
 
   /* 边框 */
-  --border-color: rgba(255, 255, 255, 0.1);
+  --border-color: rgba(0, 0, 0, 0.08);
   --border-radius: 12px;
   --border-radius-sm: 8px;
 
@@ -37,10 +37,10 @@
 
   /* 字体 */
   --font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-size-base: 1rem;
-  --font-size-sm: 0.875rem;
-  --font-size-lg: 1.125rem;
-  --font-size-xl: 1.25rem;
+  --font-size-base: 1.1rem;
+  --font-size-sm: 0.9rem;
+  --font-size-lg: 1.25rem;
+  --font-size-xl: 1.5rem;
 
   /* 间距 */
   --space-xs: 0.25rem;
@@ -52,16 +52,16 @@
 
 /* 浅色主题变量 */
 [data-theme="light"] {
-  --bg-primary: #f8f9fa;
-  --bg-secondary: #e9ecef;
-  --bg-card: rgba(0, 0, 0, 0.05);
-  --bg-card-hover: rgba(0, 0, 0, 0.08);
+  --bg-primary: #2D3748;
+  --bg-secondary: #4A5568;
+  --bg-card: rgba(45, 55, 72, 0.95);
+  --bg-card-hover: rgba(255, 255, 255, 0.08);
 
-  --text-primary: #212529;
-  --text-secondary: rgba(33, 37, 41, 0.7);
-  --text-disabled: rgba(33, 37, 41, 0.5);
+  --text-primary: #EDF2F7;
+  --text-secondary: rgba(237, 242, 247, 0.7);
+  --text-disabled: rgba(237, 242, 247, 0.5);
 
-  --border-color: rgba(0, 0, 0, 0.1);
+  --border-color: rgba(255, 255, 255, 0.1);
 }
 
 /* 基础样式 */
@@ -78,7 +78,7 @@ html {
 body {
   font-family: var(--font-family);
   font-size: var(--font-size-base);
-  line-height: 1.6;
+  line-height: 1.7;
   color: var(--text-primary);
   background-color: var(--bg-primary);
   min-height: 100vh;
@@ -141,9 +141,7 @@ select,
 }
 
 .user-actions {
-  display: flex;
-  align-items: center;
-  gap: var(--space-md);
+  display: none;
 }
 
 .app-main {
@@ -175,9 +173,10 @@ select,
 }
 
 .card:hover {
-  transform: translateY(-5px);
+  transform: translateY(-5px) scale(1.01);
   box-shadow: var(--shadow-lg);
   background: var(--bg-card-hover);
+  transition: var(--transition-fast);
 }
 
 /* 编辑器区域 */

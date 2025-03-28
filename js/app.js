@@ -387,7 +387,7 @@ function resetEditor() {
   updateWordCount();
 }
 
-// 加载日志
+// 加载日志 - 确保一次性加载全部
 function loadLogs() {
   state.currentLogs = getLogsFromStorage();
   renderLogList(state.currentLogs);
@@ -412,7 +412,7 @@ function filterLogs() {
   renderLogList(filtered);
 }
 
-// 渲染日志列表
+// 渲染日志列表 - 一次性渲染所有日志，不分页
 function renderLogList(logs) {
   if (logs.length === 0) {
     dom.logList.innerHTML = `
