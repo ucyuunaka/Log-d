@@ -204,6 +204,8 @@ class EventHandlers {
   async saveLog() {
     try {
       const textContent = stateManager.getEditorText();
+      const htmlContent = stateManager.getEditorHTML();
+      const delta = stateManager.getEditorDelta();
       const images = stateManager.getImages();
       
       if (!textContent && !images.length) {
@@ -261,17 +263,23 @@ class EventHandlers {
 
   // 重置编辑器和图片状态
   resetEditorAndImages() {
-    stateManager.resetEditor();
+    if (stateManager.quill) {
+      stateManager.quill.setText('');
+    }
     stateManager.clearImages();
     this.updateImagePreview();
     this.updateWordCount();
+    showToast('已重置编辑内容', 'info', this.dom.toastContainer);
   }
 
   // 更新字数统计
   updateWordCount() {
     const text = stateManager.getEditorText();
-    const count = text ? text.split(/\s+/).length : 0;
-    this.dom.wordCount.textContent = count;
+    // 使用中文友好的字数统计方法
+    const count = text ? text.replace(/\s+/g, '').length : 0;
+    if (this.dom.wordCount) {
+      this.dom.wordCount.textContent = count;
+    }
   }
 
   // 加载日志
@@ -342,11 +350,35 @@ class EventHandlers {
   renderTextContent(log) {
     if (!log.textContent) return '<p class="no-text">[无文本内容]</p>';
     
-    const previewText = log.textContent.length > 200 
-      ? log.textContent.substring(0, 200) + '...' 
-      : log.textContent;
+    // 检查内容是否需要被截断
+    const needsTruncation = log.textContent.length > 300 || log.textContent.split('\n').length > 6;
     
-    return `<div class="text-preview">${previewText}</div>`;
+    // 根据内容是否需要截断来添加类
+    const truncatedClass = needsTruncation ? 'truncated' : '';
+    
+    // 预处理文本，保留空行，同时进行HTML转义
+    const processedText = log.textContent
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;')
+      .replace(/\n/g, '<br>');
+    
+    // 先构建文本预览元素
+    const previewHtml = `<div class="text-preview ${truncatedClass}">${processedText}</div>`;
+    
+    // 如果需要截断，添加展开按钮
+    if (needsTruncation) {
+      return `
+        ${previewHtml}
+        <button class="expand-btn" data-action="expand">
+          更多内容 <i class="fas fa-chevron-down"></i>
+        </button>
+      `;
+    } else {
+      return previewHtml;
+    }
   }
 
   renderImages(log) {
@@ -376,6 +408,37 @@ class EventHandlers {
     if (e.target.closest('.log-actions button')) {
       const logId = e.target.closest('.log-item').dataset.id;
       this.deleteLog(logId);
+      return;
+    }
+    
+    // 处理展开/收起按钮
+    const expandButton = e.target.closest('.expand-btn');
+    if (expandButton) {
+      // 查找按钮对应的文本预览元素
+      const textPreview = expandButton.previousElementSibling;
+      if (!textPreview || !textPreview.classList.contains('text-preview')) {
+        return; // 安全检查，确保找到了正确的元素
+      }
+      
+      const isExpanded = textPreview.classList.contains('expanded');
+      
+      // 切换展开状态
+      textPreview.classList.toggle('expanded');
+      expandButton.classList.toggle('expanded');
+      
+      // 更新按钮文本和图标
+      if (isExpanded) {
+        expandButton.innerHTML = '更多内容 <i class="fas fa-chevron-down"></i>';
+        expandButton.setAttribute('data-action', 'expand');
+      } else {
+        expandButton.innerHTML = '收起内容 <i class="fas fa-chevron-up"></i>';
+        expandButton.setAttribute('data-action', 'collapse');
+        
+        // 滚动到展开的内容顶部，使用延时确保DOM更新后滚动
+        setTimeout(() => {
+          textPreview.scrollIntoView({behavior: 'smooth', block: 'start'});
+        }, 100);
+      }
     }
   }
 

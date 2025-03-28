@@ -18,7 +18,14 @@ class App {
       wordCount: document.getElementById('wordCount'),
       searchInput: document.getElementById('searchInput'),
       dateFilter: document.getElementById('dateFilter'),
-      toastContainer: document.getElementById('toastContainer')
+      toastContainer: document.getElementById('toastContainer'),
+      // 添加缺失的DOM元素引用
+      resetLogBtn: document.getElementById('resetLog'),
+      clearFilters: document.getElementById('clearFilters'),
+      exportLogs: document.getElementById('exportLogs'),
+      importLogs: document.getElementById('importLogs'),
+      editorFullscreen: document.getElementById('editorFullscreen'),
+      quickTemplate: document.getElementById('quickTemplate')
     };
   }
 
@@ -45,6 +52,7 @@ class App {
     
     // 设置事件监听
     eventHandlers.setupEventListeners();
+    this.setupAdditionalEventListeners();
     
     // 加载初始数据
     eventHandlers.loadLogs();
@@ -52,7 +60,52 @@ class App {
     // 初始化字数统计
     eventHandlers.updateWordCount();
     
+    // 监听自定义事件
+    document.addEventListener('showFullImage', (event) => {
+      eventHandlers.showFullImage(event.detail);
+    });
+    
     console.log('应用初始化完成');
+  }
+  
+  // 设置其他事件监听器
+  setupAdditionalEventListeners() {
+    // 重置日志按钮
+    this.dom.resetLogBtn.addEventListener('click', () => {
+      if (confirm('确定要清空当前编辑内容吗？')) {
+        eventHandlers.resetEditorAndImages();
+      }
+    });
+    
+    // 清除筛选条件
+    this.dom.clearFilters.addEventListener('click', () => {
+      this.dom.searchInput.value = '';
+      this.dom.dateFilter.value = '';
+      eventHandlers.filterLogs();
+    });
+    
+    // 全屏编辑功能
+    this.dom.editorFullscreen.addEventListener('click', this.toggleFullscreenEditor.bind(this));
+    
+    // 模板按钮
+    this.dom.quickTemplate.addEventListener('click', () => {
+      const templatesModal = document.getElementById('templatesModal');
+      templatesModal.classList.add('active');
+      
+      // 关闭按钮
+      document.getElementById('templateClose').addEventListener('click', () => {
+        templatesModal.classList.remove('active');
+      });
+      
+      // 点击模板应用
+      document.querySelectorAll('.template-item').forEach(item => {
+        item.addEventListener('click', (e) => {
+          const templateType = e.currentTarget.dataset.template;
+          this.applyTemplate(templateType);
+          templatesModal.classList.remove('active');
+        });
+      });
+    });
   }
 
   // 初始化编辑器
@@ -81,6 +134,37 @@ class App {
       eventHandlers.updateWordCount();
     }, 300));
   }
+  
+  // 切换全屏编辑模式
+  toggleFullscreenEditor() {
+    const editorSection = this.dom.editorContainer.closest('.editor-section');
+    editorSection.classList.toggle('fullscreen-editor');
+    
+    const isFullscreen = editorSection.classList.contains('fullscreen-editor');
+    this.dom.editorFullscreen.innerHTML = isFullscreen ? 
+      '<i class="fas fa-compress-alt"></i>' : 
+      '<i class="fas fa-expand-alt"></i>';
+    
+    this.dom.editorFullscreen.setAttribute('data-tooltip', 
+      isFullscreen ? '退出全屏' : '全屏编辑');
+  }
+  
+  // 应用模板
+  applyTemplate(templateType) {
+    const templates = {
+      daily: `# ${new Date().toLocaleDateString('zh-CN')} 日记\n\n今天的主要事项：\n- \n\n收获与感悟：\n\n明天计划：\n- `,
+      gratitude: `# 感恩记录\n\n今天，我要感谢：\n\n1. \n2. \n3. \n\n这些人/事物给我带来的影响：\n\n`,
+      idea: `# 创意记录\n\n灵感描述：\n\n可能的应用场景：\n\n后续行动计划：\n- `,
+      travel: `# ${new Date().toLocaleDateString('zh-CN')} 旅行笔记\n\n地点：\n\n见闻：\n\n感受：\n\n值得推荐：\n- `
+    };
+    
+    const template = templates[templateType] || '';
+    if(template && stateManager.quill) {
+      stateManager.quill.setText('');
+      stateManager.quill.clipboard.dangerouslyPasteHTML(0, template.replace(/\n/g, '<br>'));
+      showToast('已应用模板', 'success', this.dom.toastContainer);
+    }
+  }
 }
 
 // 创建并初始化应用
@@ -88,3 +172,36 @@ const app = new App();
 app.init();
 
 export default app;
+
+// 辅助函数 - 显示通知
+function showToast(message, type, container) {
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  toast.innerHTML = `
+    <i class="fas ${getToastIcon(type)}"></i>
+    <span>${message}</span>
+  `;
+  
+  container.appendChild(toast);
+  setTimeout(() => toast.classList.add('show'), 10);
+  
+  // 自动消失
+  setTimeout(() => {
+    toast.classList.remove('show');
+    setTimeout(() => {
+      if (toast.parentNode) {
+        container.removeChild(toast);
+      }
+    }, 300);
+  }, 3000);
+}
+
+// 获取通知图标
+function getToastIcon(type) {
+  switch (type) {
+    case 'success': return 'fa-check-circle';
+    case 'error': return 'fa-exclamation-circle';
+    case 'warning': return 'fa-exclamation-triangle';
+    default: return 'fa-info-circle';
+  }
+}

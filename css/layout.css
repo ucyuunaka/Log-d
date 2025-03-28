@@ -83,29 +83,28 @@
 
 @media (min-width: 992px) {
   .app-main {
-    grid-template-columns: minmax(0, 1.8fr) minmax(0, 1fr);
-    grid-template-rows: auto auto 1fr;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto;
     gap: var(--space-lg);
   }
   
   .editor-section {
-    grid-column: 1;
-    grid-row: 1 / span 2;
+    grid-row: 1;
   }
   
   .image-upload-section {
-    grid-column: 1;
-    grid-row: 3;
+    grid-row: 2;
   }
   
   .logs-section {
-    grid-column: 2;
-    grid-row: 1 / span 3;
-    position: sticky;
-    top: var(--space-lg);
-    max-height: calc(100vh - var(--space-lg) * 3);
-    display: flex;
-    flex-direction: column;
+    grid-row: 3;
+    width: 100%;
+    max-height: none;
+  }
+  
+  /* 优化日志列表的高度，保持适当滚动区域 */
+  .log-list {
+    max-height: 500px;
   }
 }
 
@@ -228,6 +227,17 @@
 /* 通用区域样式 */
 .page-section {
   margin-bottom: var(--space-xl);
+}
+
+/* 修改logs-section样式，使其成为全宽度组件而非侧栏 */
+.logs-section {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.logs-section .card {
+  flex: 1;
 }
 
 /* 响应式设计 */

@@ -379,16 +379,45 @@
 .log-content {
   color: var(--text-primary);
   margin-bottom: var(--space-md);
-  white-space: pre-wrap;
   line-height: 1.7;
+  position: relative;
 }
 
 .text-preview {
   position: relative;
   padding: var(--space-sm) 0;
+  overflow: hidden;
+  transition: all 0.5s ease;
+  word-break: break-word; /* 允许在任何字符间断行 */
 }
 
-/* 预览图片网格 */
+/* 非展开状态下限制高度 */
+.text-preview.truncated {
+  max-height: 250px;
+}
+
+.text-preview.expanded {
+  max-height: none;
+}
+
+.text-preview.truncated::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 60px;
+  background: linear-gradient(transparent, var(--glass-bg));
+  pointer-events: none;
+}
+
+/* 确保空行正确显示 */
+.text-preview br {
+  display: block;
+  content: "";
+  margin-top: 0.5em;
+}
+
 .thumbnails {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
