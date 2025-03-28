@@ -1,0 +1,162 @@
+/* 全局变量 */
+:root {
+  /* 颜色 - 更现代的配色方案 */
+  --primary-color: #7F5AF0;
+  --primary-light: rgba(127, 90, 240, 0.15);
+  --primary-dark: #6B4DD3;
+  --danger-color: #F25F5C;
+  --success-color: #2CB67D;
+  --warning-color: #FF8906;
+  --info-color: #3DA9FC;
+
+  /* 背景 - 更柔和的深色主题 */
+  --bg-primary: #16161a;
+  --bg-secondary: #242629;
+  --bg-card: rgba(36, 38, 41, 0.8);
+  --bg-card-hover: rgba(255, 255, 255, 0.03);
+
+  /* 文本 */
+  --text-primary: #fffffe;
+  --text-secondary: #94a1b2;
+  --text-disabled: rgba(148, 161, 178, 0.5);
+
+  /* 边框 */
+  --border-color: rgba(127, 90, 240, 0.1);
+  --border-radius: 16px;
+  --border-radius-sm: 12px;
+
+  /* 阴影 - 更深更柔和的阴影 */
+  --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.15);
+  --shadow-lg: 0 16px 32px rgba(0, 0, 0, 0.2);
+  
+  /* 玻璃态效果 */
+  --glass-bg: rgba(36, 38, 41, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.05);
+  --glass-blur: 12px;
+
+  /* 过渡 */
+  --transition-fast: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* 字体 */
+  --font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-size-base: 1rem;
+  --font-size-sm: 0.875rem;
+  --font-size-lg: 1.25rem;
+  --font-size-xl: 1.5rem;
+
+  /* 间距 */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  
+  /* 布局 */
+  --max-width: 1200px;
+  --header-height: 70px;
+  --sidebar-width: 260px;
+  
+  /* CSS变量计算 */
+  --primary-color-rgb: 127, 90, 240;
+  --danger-color-rgb: 242, 95, 92;
+}
+
+/* 浅色主题变量 */
+[data-theme="light"] {
+  --primary-color: #6246EA;
+  --primary-light: rgba(98, 70, 234, 0.15);
+  --primary-dark: #5438D5;
+  
+  --bg-primary: #FFFFFE;
+  --bg-secondary: #F2F4F6;
+  --bg-card: rgba(255, 255, 255, 0.8);
+  --bg-card-hover: rgba(0, 0, 0, 0.02);
+
+  --text-primary: #2B2C34;
+  --text-secondary: #5A5F73;
+  --text-disabled: rgba(90, 95, 115, 0.5);
+
+  --border-color: rgba(98, 70, 234, 0.1);
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.2);
+  
+  --primary-color-rgb: 98, 70, 234;
+  --danger-color-rgb: 242, 95, 92;
+}
+
+/* 基础样式 */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  font-size: 16px;
+}
+
+body {
+  font-family: var(--font-family);
+  font-size: var(--font-size-base);
+  line-height: 1.7;
+  color: var(--text-primary);
+  background-color: var(--bg-primary);
+  background-image: 
+    radial-gradient(at 25% 25%, rgba(127, 90, 240, 0.15) 0px, transparent 50%),
+    radial-gradient(at 75% 75%, rgba(44, 182, 125, 0.15) 0px, transparent 50%);
+  background-attachment: fixed;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  transition: var(--transition-slow);
+  overflow-x: hidden;
+}
+
+[data-theme="light"] body {
+  background-image: 
+    radial-gradient(at 25% 25%, rgba(98, 70, 234, 0.08) 0px, transparent 50%),
+    radial-gradient(at 75% 75%, rgba(44, 182, 125, 0.08) 0px, transparent 50%);
+}
+
+/* 可聚焦元素样式 */
+a,
+button,
+input,
+textarea,
+select,
+[tabindex] {
+  outline: none;
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+/* 辅助类 */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* 额外美化 */
+::selection {
+  background: var(--primary-light);
+  color: var(--primary-color);
+}
