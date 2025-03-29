@@ -28,20 +28,13 @@
   height: calc(100vh - 220px);
 }
 
-/* 编辑器工具栏 */
+/* 隐藏工具栏，因为我们不再使用它 */
 .ql-toolbar {
-  border-radius: var(--border-radius) var(--border-radius) 0 0 !important;
-  border-color: var(--border-color) !important;
-  background: var(--bg-secondary) !important;
-  padding: var(--space-md) !important;
-  border-width: 1.5px !important;
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-xs);
+  display: none !important;
 }
 
 .ql-container {
-  border-radius: 0 0 var(--border-radius) var(--border-radius) !important;
+  border-radius: var(--border-radius) !important;
   border-color: var(--border-color) !important;
   font-family: var(--font-family) !important;
   background: var(--glass-bg) !important;

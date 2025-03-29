@@ -257,12 +257,7 @@ class App {
     console.log('正在初始化编辑器...');
     const quill = new Quill(this.dom.editorContainer, {
       modules: {
-        toolbar: [
-          ['bold', 'italic', 'underline'],
-          [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-          ['link', 'image'],
-          ['clean']
-        ],
+        toolbar: false, // 移除工具栏，精简界面
         clipboard: {
           matchVisual: false
         }

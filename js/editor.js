@@ -12,12 +12,7 @@ export class EditorManager {
   initialize() {
     this.quill = new Quill(this.editorContainer, {
       modules: {
-        toolbar: [
-          ['bold', 'italic', 'underline'],
-          [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-          ['link', 'image'],
-          ['clean']
-        ],
+        toolbar: false, // 移除工具栏，保持纯文本编辑功能
         clipboard: {
           matchVisual: false
         }
