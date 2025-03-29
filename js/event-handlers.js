@@ -485,6 +485,7 @@ class EventHandlers {
       htmlContent: stateManager.getEditorHTML(),
       delta: stateManager.getEditorDelta(),
       images: stateManager.getImages(),
+      mood: stateManager.getCurrentMood(), // 确保包含心情
       searchText: stateManager.getEditorText().toLowerCase()
     };
   }

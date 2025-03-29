@@ -525,6 +525,11 @@
   transform: translateY(-3px);
 }
 
+.mood-btn:active {
+  transform: scale(0.95);
+  transition: transform 0.1s;
+}
+
 /* 工具提示 */
 [data-tooltip] {
   position: relative;

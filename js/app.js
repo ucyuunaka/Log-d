@@ -224,17 +224,23 @@ class App {
     if (moodButtons.length > 0) {
       moodButtons.forEach(btn => {
         btn.addEventListener('click', () => {
+          // 检查当前按钮是否已经激活
+          const isActive = btn.classList.contains('active');
+          const selectedMood = btn.dataset.mood;
+          
           // 移除所有按钮的active类
           moodButtons.forEach(b => b.classList.remove('active'));
           
-          // 给当前点击的按钮添加active类
-          btn.classList.add('active');
-          
-          // 保存选中的心情到状态管理器
-          const selectedMood = btn.dataset.mood;
-          stateManager.setCurrentMood(selectedMood);
-          
-          this.showToast(`已选择心情: ${this.getMoodLabel(selectedMood)}`, 'info');
+          // 如果按钮不是激活状态，则激活它；否则保持取消状态
+          if (!isActive) {
+            btn.classList.add('active');
+            stateManager.setCurrentMood(selectedMood);
+            this.showToast(`已选择心情: ${this.getMoodLabel(selectedMood)}`, 'info');
+          } else {
+            // 取消选择，清除心情状态
+            stateManager.setCurrentMood(null);
+            this.showToast(`已取消心情选择`, 'info');
+          }
         });
       });
     }
