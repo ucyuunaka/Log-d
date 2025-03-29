@@ -4,3 +4,30 @@
 @import 'layout.css';
 @import 'components.css';
 @import 'editor.css';
+
+/* 修改日志列表区域样式，移除固定高度限制 */
+.logs-section {
+  /* ...existing code... */
+  max-height: none; /* 移除最大高度限制 */
+  height: auto; /* 高度自适应内容 */
+}
+
+.log-list {
+  /* ...existing code... */
+  max-height: none; /* 移除最大高度限制 */
+  overflow-y: visible; /* 改为visible，不强制添加滚动条 */
+  height: auto; /* 高度自适应内容 */
+}
+
+/* 调整页面整体布局，确保日志区域可以正常扩展 */
+.app-main {
+  /* ...existing code... */
+  height: auto; /* 确保主内容区高度自适应 */
+  min-height: 70vh; /* 保持最小高度 */
+}
+
+/* 调整卡片样式，确保内容可以正常扩展 */
+.card {
+  /* ...existing code... */
+  height: auto; /* 确保卡片高度自适应内容 */
+}
