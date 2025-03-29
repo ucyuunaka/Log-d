@@ -1,0 +1,203 @@
+/* 日志列表组件样式 */
+
+/* 日志列表容器 */
+.log-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  max-height: 600px;
+  overflow-y: auto;
+  padding-right: var(--space-md);
+  margin-right: calc(var(--space-md) * -1);
+  scrollbar-width: thin;
+  scrollbar-color: var(--primary-color) transparent;
+  margin-bottom: var(--space-lg);
+}
+
+.log-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.log-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.log-list::-webkit-scrollbar-thumb {
+  background-color: var(--primary-light);
+  border-radius: 20px;
+}
+
+.log-list::-webkit-scrollbar-thumb:hover {
+  background-color: var(--primary-color);
+}
+
+/* 日志项样式 */
+.log-item {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  border-radius: var(--border-radius-sm);
+  padding: var(--space-lg);
+  border: 1px solid var(--glass-border);
+  transition: var(--transition-normal);
+  position: relative;
+  overflow: hidden;
+}
+
+/* 时间轴效果 */
+.log-item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 3px;
+  background: linear-gradient(to bottom, var(--primary-color), var(--accent-color));
+  opacity: 0.7;
+  transition: var(--transition-normal);
+}
+
+.log-item:hover {
+  transform: translateY(-3px) translateX(3px);
+  box-shadow: var(--shadow-md), 0 5px 15px rgba(var(--primary-color-rgb), 0.15);
+  border-color: rgba(var(--primary-color-rgb), 0.25);
+}
+
+.log-item:hover::before {
+  width: 5px;
+  opacity: 1;
+}
+
+.log-item time {
+  display: block;
+  color: var(--accent-color);
+  font-size: var(--font-size-sm);
+  margin-bottom: var(--space-sm);
+  font-weight: 600;
+}
+
+.log-content {
+  color: var(--text-primary);
+  margin-bottom: var(--space-md);
+  line-height: 1.7;
+  position: relative;
+}
+
+/* 文本预览样式 */
+.text-preview {
+  position: relative;
+  padding: var(--space-sm) 0;
+  overflow: hidden;
+  transition: all 0.5s ease;
+  word-break: break-word; /* 允许在任何字符间断行 */
+}
+
+/* 非展开状态下限制高度 */
+.text-preview.truncated {
+  max-height: 250px;
+}
+
+.text-preview.expanded {
+  max-height: none;
+}
+
+.text-preview.truncated::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 60px;
+  background: linear-gradient(transparent, var(--glass-bg));
+  pointer-events: none;
+}
+
+/* 确保空行正确显示 */
+.text-preview br {
+  display: block;
+  content: "";
+  margin-top: 0.5em;
+}
+
+/* 缩略图样式 */
+.thumbnails {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+  gap: var(--space-sm);
+  margin-top: var(--space-md);
+}
+
+.thumbnail-container {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: var(--border-radius-sm);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--glass-border);
+  transition: var(--transition-normal);
+}
+
+.thumbnail {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  cursor: pointer;
+  transition: var(--transition-normal);
+}
+
+.thumbnail-container:hover {
+  transform: scale(1.05);
+  box-shadow: var(--shadow-md);
+  border-color: var(--accent-color);
+  z-index: 2;
+}
+
+.thumbnail-container:hover .thumbnail {
+  transform: scale(1.1);
+}
+
+.log-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: var(--space-md);
+  gap: var(--space-sm);
+}
+
+/* 分页控制器 */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-md) 0;
+}
+
+#pageIndicator {
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+/* 空状态样式 */
+.empty-state {
+  text-align: center;
+  padding: var(--space-xl);
+  color: var(--text-tertiary);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+}
+
+.empty-state i {
+  font-size: 3.5rem;
+  margin-bottom: var(--space-md);
+  color: var(--primary-color);
+  opacity: 0.5;
+  animation: pulse 3s infinite ease-in-out;
+}
+
+.empty-state p {
+  font-size: var(--font-size-lg);
+  max-width: 300px;
+  margin: 0 auto;
+}

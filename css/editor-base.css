@@ -1,0 +1,236 @@
+/* 编辑器基础变量 */
+:root {
+  /* 编辑器尺寸 */
+  --editor-height: 320px;
+  --editor-fullscreen-height: calc(100vh - 220px);
+  
+  /* 编辑器特定间距 */
+  --editor-padding: var(--space-lg);
+  --editor-gap: var(--space-md);
+  
+  /* 动画效果 */
+  --editor-transition: var(--transition-normal);
+}
+
+/* 编辑器区域 - 全新设计 */
+.editor-section {
+  position: relative;
+}
+
+/* 编辑器容器 */
+#editor-container {
+  height: var(--editor-height);
+  background: transparent;
+  font-size: var(--font-size-base);
+  line-height: 1.8;
+  transition: var(--editor-transition);
+}
+
+/* 全屏编辑模式 */
+.fullscreen-editor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--bg-primary);
+  z-index: 1000;
+  padding: var(--space-xl);
+}
+
+.fullscreen-editor #editor-container {
+  height: var(--editor-fullscreen-height);
+}
+
+/* 隐藏工具栏，因为我们不再使用它 */
+.ql-toolbar {
+  display: none !important;
+}
+
+.ql-container {
+  border-radius: var(--border-radius) !important;
+  border-color: var(--border-color) !important;
+  font-family: var(--font-family) !important;
+  background: var(--glass-bg) !important;
+  backdrop-filter: blur(var(--glass-blur));
+  border-width: 1.5px !important;
+  box-shadow: var(--shadow-inner);
+}
+
+/* 自定义 Quill 编辑器样式 */
+.ql-toolbar button {
+  width: 34px !important;
+  height: 34px !important;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--border-radius-sm) !important;
+  transition: var(--editor-transition) !important;
+  margin: 0 1px !important;
+}
+
+.ql-toolbar button:hover {
+  background-color: var(--primary-light) !important;
+  color: var(--primary-color) !important;
+}
+
+.ql-toolbar .ql-active {
+  background-color: var(--primary-color) !important;
+  color: white !important;
+}
+
+.ql-formats {
+  margin-right: var(--space-sm) !important;
+  display: inline-flex;
+  border-right: 1px solid var(--border-color);
+  padding-right: var(--space-sm);
+}
+
+.ql-formats:last-child {
+  border-right: none;
+}
+
+/* 动态提示工具窗 */
+.ql-snow .ql-tooltip {
+  background: var(--glass-bg) !important;
+  backdrop-filter: blur(var(--glass-blur));
+  border-color: var(--glass-border) !important;
+  box-shadow: var(--shadow-md) !important;
+  border-radius: var(--border-radius-sm) !important;
+  padding: var(--space-md) !important;
+  color: var(--text-primary) !important;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+}
+
+.ql-snow .ql-tooltip input[type="text"] {
+  border: 1.5px solid var(--border-color) !important;
+  border-radius: var(--border-radius-sm) !important;
+  background: var(--bg-secondary) !important;
+  color: var(--text-primary) !important;
+  padding: var(--space-sm) !important;
+  margin: var(--space-sm) 0 !important;
+}
+
+.ql-snow .ql-tooltip a.ql-action,
+.ql-snow .ql-tooltip a.ql-remove {
+  color: var(--primary-color) !important;
+  text-decoration: none !important;
+  transition: var(--editor-transition) !important;
+}
+
+.ql-snow .ql-tooltip a.ql-action:hover,
+.ql-snow .ql-tooltip a.ql-remove:hover {
+  text-decoration: underline !important;
+  color: var(--accent-color) !important;
+}
+
+.editor-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: var(--space-lg);
+  padding-top: var(--space-lg);
+  border-top: 2px dashed var(--border-color);
+  flex-wrap: wrap;
+  gap: var(--editor-gap);
+}
+
+.word-count {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  background: var(--primary-light);
+  padding: 0.25rem 0.75rem;
+  border-radius: 2rem;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  font-weight: 500;
+  transition: var(--editor-transition);
+}
+
+.word-count:hover {
+  background: var(--primary-color);
+  color: white;
+  transform: translateY(-2px);
+}
+
+.editor-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-lg);
+}
+
+.editor-tools {
+  display: flex;
+  gap: var(--space-sm);
+}
+
+/* 心情选择器 */
+.mood-selector {
+  display: flex;
+  align-items: center;
+  gap: var(--editor-gap);
+}
+
+.mood-label {
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.mood-options {
+  display: flex;
+  gap: var(--space-xs);
+}
+
+.mood-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--glass-bg);
+  border: 1.5px solid var(--glass-border);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: var(--editor-transition);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  position: relative;
+  transform-origin: center;
+}
+
+.mood-btn:hover {
+  transform: translateY(-2px);
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+}
+
+.mood-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at center, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 70%);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.mood-btn:hover::before {
+  opacity: 1;
+}
+
+.mood-btn.active {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+  color: white;
+  transform: translateY(-3px);
+}
+
+.mood-btn:active {
+  transform: scale(0.95);
+  transition: transform 0.1s;
+}

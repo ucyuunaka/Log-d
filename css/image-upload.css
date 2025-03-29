@@ -1,0 +1,146 @@
+/* 图片上传组件样式 */
+
+/* 图片上传区域标题 */
+.image-upload-section h2 {
+  margin-bottom: var(--space-lg);
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-weight: 700;
+  font-size: var(--font-size-xl);
+  color: var(--primary-color);
+}
+
+/* 上传区域样式 */
+.upload-area {
+  position: relative;
+  height: 180px;
+  border: 2px dashed var(--border-color);
+  border-radius: var(--border-radius);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: var(--transition-normal);
+  overflow: hidden;
+  margin-bottom: var(--space-md);
+  background: var(--bg-secondary);
+}
+
+.upload-area:hover {
+  border-color: var(--accent-color);
+  background: var(--accent-light);
+}
+
+.upload-area.dragover {
+  border-color: var(--accent-color);
+  background: var(--accent-light);
+  transform: scale(1.01);
+  box-shadow: 0 0 0 4px var(--accent-light);
+}
+
+.upload-prompt {
+  text-align: center;
+  color: var(--text-secondary);
+  pointer-events: none;
+  padding: var(--space-lg);
+}
+
+.upload-prompt i {
+  font-size: 3rem;
+  margin-bottom: var(--space-md);
+  color: var(--accent-color);
+  opacity: 0.8;
+  filter: drop-shadow(0 2px 4px rgba(var(--accent-color-rgb), 0.2));
+}
+
+.upload-area:hover .upload-prompt i {
+  transform: scale(1.1);
+  opacity: 1;
+  animation: float 2s ease-in-out infinite;
+}
+
+.image-input {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+/* 图片预览网格 */
+.image-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: var(--space-md);
+  margin: var(--space-lg) 0;
+}
+
+.preview-image-container {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: var(--border-radius-sm);
+  overflow: hidden;
+  transition: var(--transition-normal);
+  box-shadow: var(--shadow-sm);
+  border: 2px solid var(--glass-border);
+  cursor: pointer;
+}
+
+.preview-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: var(--transition-normal);
+}
+
+.preview-image-container:hover {
+  transform: translateY(-5px) scale(1.02);
+  box-shadow: var(--shadow-md);
+  border-color: var(--accent-color);
+  z-index: 2;
+}
+
+.preview-image-container:hover .preview-image {
+  transform: scale(1.1);
+}
+
+.remove-image-btn {
+  position: absolute;
+  top: var(--space-sm);
+  right: var(--space-sm);
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--danger-color);
+  color: white;
+  border: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  opacity: 0;
+  transition: var(--transition-normal);
+  transform: scale(0.8);
+  z-index: 3;
+  box-shadow: var(--shadow-sm);
+  transform-origin: center;
+}
+
+.preview-image-container:hover .remove-image-btn {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.remove-image-btn:hover {
+  transform: scale(1.1);
+  background: linear-gradient(45deg, var(--danger-color), #ff6b81);
+}
+
+.upload-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+}
