@@ -3,6 +3,7 @@ export const LOG_STORAGE_KEY = 'userLogs';
 export const MAX_IMAGE_SIZE = 800;
 export const IMAGE_QUALITY = 0.8;
 export const STORAGE_LIMIT = 5 * 1024 * 1024; // 5MB
+export const THEME_STORAGE_KEY = 'preferredTheme'; // 主题存储键名
 
 // 工具函数
 export const utils = {
@@ -33,6 +34,42 @@ export const utils = {
   fixImageOrientation(ctx, img, orientation) {
     // 根据方向调整图片
     ctx.drawImage(img, 0, 0);
+  },
+
+  // 主题相关功能
+  getPreferredTheme() {
+    // 从本地存储中获取偏好主题
+    const savedTheme = localStorage.getItem(THEME_STORAGE_KEY);
+    
+    // 如果没有保存的主题或者选择了"自动"，则根据系统偏好决定
+    if (!savedTheme || savedTheme === 'auto') {
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+    
+    return savedTheme;
+  },
+  
+  setTheme(theme) {
+    // 保存主题偏好到本地存储
+    localStorage.setItem(THEME_STORAGE_KEY, theme);
+    
+    // 如果是自动模式，检测系统偏好
+    if (theme === 'auto') {
+      const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', systemTheme);
+      return;
+    }
+    
+    // 应用主题到 HTML 元素
+    document.documentElement.setAttribute('data-theme', theme);
+  },
+  
+  toggleTheme() {
+    // 切换主题（dark/light）
+    const currentTheme = document.documentElement.getAttribute('data-theme');
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    this.setTheme(newTheme);
+    return newTheme;
   }
 };
 

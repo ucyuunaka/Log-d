@@ -1,6 +1,6 @@
 import stateManager from './state-manager.js';
 import eventHandlers from './event-handlers.js';
-import { utils } from './utils.js';
+import { utils, THEME_STORAGE_KEY } from './utils.js';
 
 // 主应用模块 - 只负责初始化和协调
 class App {
@@ -25,7 +25,8 @@ class App {
       exportLogs: document.getElementById('exportLogs'),
       importLogs: document.getElementById('importLogs'),
       editorFullscreen: document.getElementById('editorFullscreen'),
-      quickTemplate: document.getElementById('quickTemplate')
+      quickTemplate: document.getElementById('quickTemplate'),
+      themeToggle: document.getElementById('themeToggle')
     };
   }
 
@@ -41,6 +42,9 @@ class App {
 
   // 实际初始化逻辑
   initApp() {
+    // 初始化主题
+    this.initTheme();
+    
     // 初始化状态管理器
     stateManager.initDomElements(this.dom);
     
@@ -66,6 +70,35 @@ class App {
     });
     
     console.log('应用初始化完成');
+  }
+  
+  // 初始化主题
+  initTheme() {
+    // 应用保存的主题偏好
+    const preferredTheme = utils.getPreferredTheme();
+    utils.setTheme(preferredTheme);
+    
+    // 更新主题切换按钮图标
+    this.updateThemeToggleIcon(preferredTheme);
+    
+    // 监听系统主题变化
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+      if (localStorage.getItem(THEME_STORAGE_KEY) === 'auto') {
+        const systemTheme = e.matches ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', systemTheme);
+        this.updateThemeToggleIcon(systemTheme);
+      }
+    });
+  }
+  
+  // 更新主题切换按钮图标
+  updateThemeToggleIcon(theme) {
+    const themeIcon = this.dom.themeToggle.querySelector('i');
+    if (theme === 'dark') {
+      themeIcon.className = 'fas fa-moon';
+    } else {
+      themeIcon.className = 'fas fa-sun';
+    }
   }
   
   // 设置其他事件监听器
@@ -105,6 +138,21 @@ class App {
           templatesModal.classList.remove('active');
         });
       });
+    });
+    
+    // 主题切换
+    this.dom.themeToggle.addEventListener('click', () => {
+      const newTheme = utils.toggleTheme();
+      this.updateThemeToggleIcon(newTheme);
+      showToast(`已切换为${newTheme === 'dark' ? '深色' : '浅色'}主题`, 'info', this.dom.toastContainer);
+    });
+    
+    // 设置面板中的主题选择
+    document.getElementById('themeSetting')?.addEventListener('change', (e) => {
+      const selectedTheme = e.target.value;
+      utils.setTheme(selectedTheme);
+      this.updateThemeToggleIcon(utils.getPreferredTheme());
+      showToast(`主题设置已更新`, 'success', this.dom.toastContainer);
     });
   }
 
