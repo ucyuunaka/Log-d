@@ -70,6 +70,44 @@ export const utils = {
     const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
     this.setTheme(newTheme);
     return newTheme;
+  },
+
+  // 获取图片质量评估
+  estimateImageQuality(imgElement) {
+    // 根据图片尺寸和加载时间评估质量
+    const loadTime = imgElement.complete ? 0 : performance.now();
+    const imgSize = imgElement.naturalWidth * imgElement.naturalHeight;
+    
+    // 简单的质量评估，更复杂的实现可以考虑更多因素
+    let quality = 1.0;
+    
+    // 大图降低质量
+    if (imgSize > 4000000) quality = 0.7;      // > 4MP
+    else if (imgSize > 2000000) quality = 0.8; // > 2MP
+    else if (imgSize > 1000000) quality = 0.85; // > 1MP
+    else quality = 0.9;
+    
+    return quality;
+  },
+  
+  // 将Data URL转换为Blob
+  dataURLtoBlob(dataURL) {
+    const arr = dataURL.split(',');
+    const mime = arr[0].match(/:(.*?);/)[1];
+    const bstr = atob(arr[1]);
+    let n = bstr.length;
+    const u8arr = new Uint8Array(n);
+    
+    while (n--) {
+      u8arr[n] = bstr.charCodeAt(n);
+    }
+    
+    return new Blob([u8arr], { type: mime });
+  },
+  
+  // 获取Blob大小（字节）
+  getBlobSize(blob) {
+    return blob.size;
   }
 };
 

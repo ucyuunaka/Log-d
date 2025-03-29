@@ -32,6 +32,12 @@ class EventHandlers {
     // 清除图片
     this.dom.clearImagesBtn.addEventListener('click', this.clearAllImages.bind(this));
     
+    // 优化图片 - 添加新的事件监听
+    const optimizeBtn = document.getElementById('optimize-images');
+    if (optimizeBtn) {
+      optimizeBtn.addEventListener('click', this.optimizeImages.bind(this));
+    }
+    
     // 保存日志
     this.dom.saveLogBtn.addEventListener('click', this.saveLog.bind(this));
     
@@ -192,6 +198,234 @@ class EventHandlers {
     stateManager.clearImages();
     this.updateImagePreview();
     showToast('已清除所有图片', 'success', this.dom.toastContainer);
+  }
+
+  // 优化图片
+  async optimizeImages() {
+    const images = stateManager.getImages();
+    if (!images.length) {
+      showToast('没有可优化的图片', 'warning', this.dom.toastContainer);
+      return;
+    }
+
+    try {
+      showToast('正在优化图片...', 'info', this.dom.toastContainer);
+      
+      // 显示优化进度模态框
+      this.showOptimizeProgressModal(images.length);
+      
+      // 进行图片优化处理
+      const optimizedImages = [];
+      let processedCount = 0;
+      
+      for (const imgSrc of images) {
+        const optimizedImage = await this.optimizeImage(imgSrc);
+        optimizedImages.push(optimizedImage);
+        
+        // 更新进度
+        processedCount++;
+        this.updateOptimizeProgress(processedCount, images.length);
+        
+        // 小延时，让UI有时间更新
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+      
+      // 使用优化后的图片替换原图片
+      stateManager.clearImages();
+      stateManager.addImages(optimizedImages);
+      this.updateImagePreview();
+      
+      // 关闭模态框并显示结果
+      this.hideOptimizeProgressModal();
+      
+      // 计算大小减少百分比
+      const originalSize = this.calculateTotalImageSize(images);
+      const optimizedSize = this.calculateTotalImageSize(optimizedImages);
+      const reduction = ((originalSize - optimizedSize) / originalSize * 100).toFixed(1);
+      
+      showToast(`优化完成，减少了约 ${reduction}% 的体积`, 'success', this.dom.toastContainer);
+    } catch (error) {
+      console.error('图片优化失败:', error);
+      this.hideOptimizeProgressModal();
+      showToast('图片优化失败: ' + error.message, 'error', this.dom.toastContainer);
+    }
+  }
+  
+  // 优化单张图片
+  async optimizeImage(imgSrc) {
+    return new Promise((resolve, reject) => {
+      try {
+        const img = new Image();
+        img.onload = () => {
+          const { width, height } = this.calculateOptimalDimensions(img);
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          
+          const ctx = canvas.getContext('2d');
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = 'high';
+          ctx.drawImage(img, 0, 0, width, height);
+          
+          // 根据图片特性选择不同的压缩率
+          let compressionQuality = IMAGE_QUALITY;
+          
+          // 检测亮度和对比度，对于高对比度图片使用更高的质量
+          if (this.detectHighContrastImage(ctx, width, height)) {
+            compressionQuality = Math.min(IMAGE_QUALITY + 0.1, 0.9);
+          }
+          
+          // 对于大图片使用更激进的压缩
+          const originalSize = this.getBase64Size(imgSrc);
+          if (originalSize > 500 * 1024) { // 大于500KB
+            compressionQuality = Math.max(IMAGE_QUALITY - 0.1, 0.6);
+          }
+          
+          resolve(canvas.toDataURL('image/jpeg', compressionQuality));
+        };
+        
+        img.onerror = () => reject(new Error('加载图片失败'));
+        img.src = imgSrc;
+      } catch (error) {
+        reject(error);
+      }
+    });
+  }
+  
+  // 计算最优尺寸
+  calculateOptimalDimensions(img) {
+    let { width, height } = img;
+    const maxSize = Math.max(width, height);
+    let targetSize;
+    
+    // 根据图片大小决定目标尺寸
+    if (maxSize > 2000) targetSize = 1500;      // 超大图片
+    else if (maxSize > 1500) targetSize = 1200; // 大图片
+    else if (maxSize > 1000) targetSize = 800;  // 中大图片
+    else if (maxSize > 600) targetSize = 600;   // 中等图片
+    else targetSize = maxSize;                  // 保持原尺寸
+    
+    // 计算缩放比例，保持宽高比
+    const scale = targetSize / maxSize;
+    if (scale < 1) {
+      width = Math.round(width * scale);
+      height = Math.round(height * scale);
+    }
+    
+    return { width, height };
+  }
+  
+  // 检测高对比度图片
+  detectHighContrastImage(ctx, width, height) {
+    try {
+      // 采样点进行亮度分析
+      const imageData = ctx.getImageData(0, 0, width, height);
+      const data = imageData.data;
+      const sampleSize = Math.min(width * height, 10000); // 最多采样10000点
+      const samplingRatio = Math.floor(width * height / sampleSize);
+      
+      let brightnessValues = [];
+      
+      for (let i = 0; i < data.length; i += 4 * samplingRatio) {
+        const r = data[i];
+        const g = data[i + 1];
+        const b = data[i + 2];
+        // 计算亮度
+        const brightness = 0.299 * r + 0.587 * g + 0.114 * b;
+        brightnessValues.push(brightness);
+      }
+      
+      // 计算亮度标准差来检测对比度
+      const avgBrightness = brightnessValues.reduce((acc, val) => acc + val, 0) / brightnessValues.length;
+      let variance = 0;
+      
+      for (const brightness of brightnessValues) {
+        variance += Math.pow(brightness - avgBrightness, 2);
+      }
+      
+      variance /= brightnessValues.length;
+      const stdDev = Math.sqrt(variance);
+      
+      // 高对比度的图片标准差通常较大
+      return stdDev > 60;
+    } catch (e) {
+      console.warn('对比度检测失败，返回默认值', e);
+      return false;
+    }
+  }
+  
+  // 计算base64图片大小
+  getBase64Size(base64String) {
+    // 去掉数据前缀，如"data:image/jpeg;base64,"
+    const base64 = base64String.split(',')[1];
+    return base64 ? base64.length * 3 / 4 : 0;
+  }
+  
+  // 计算总图片大小
+  calculateTotalImageSize(images) {
+    return images.reduce((total, img) => total + this.getBase64Size(img), 0);
+  }
+  
+  // 显示优化进度模态框
+  showOptimizeProgressModal(totalImages) {
+    // 检查是否已存在模态框
+    let modal = document.getElementById('optimizeProgressModal');
+    
+    if (!modal) {
+      // 创建新的模态框
+      modal = document.createElement('div');
+      modal.id = 'optimizeProgressModal';
+      modal.className = 'modal';
+      modal.innerHTML = `
+        <div class="modal-content card" style="max-width: 400px;">
+          <h3><i class="fas fa-compress-arrows-alt"></i> 图片优化中</h3>
+          <div class="progress-container" style="margin: 20px 0;">
+            <div class="progress-bar" id="optimizeProgressBar" style="height: 8px; background: var(--primary-light); border-radius: 4px; overflow: hidden;">
+              <div style="height: 100%; width: 0%; background: linear-gradient(90deg, var(--primary-color), var(--accent-color)); transition: width 0.3s;"></div>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-top: 8px;">
+              <span id="optimizeProgressText">处理中 0/${totalImages}</span>
+              <span id="optimizeProgressPercent">0%</span>
+            </div>
+          </div>
+          <p style="color: var(--text-secondary); font-size: 0.9rem; text-align: center;">
+            正在优化图片质量和大小，请稍候...
+          </p>
+        </div>
+      `;
+      
+      document.body.appendChild(modal);
+    }
+    
+    // 显示模态框
+    setTimeout(() => modal.classList.add('active'), 10);
+  }
+  
+  // 更新优化进度
+  updateOptimizeProgress(current, total) {
+    const progressBar = document.querySelector('#optimizeProgressBar > div');
+    const progressText = document.getElementById('optimizeProgressText');
+    const progressPercent = document.getElementById('optimizeProgressPercent');
+    
+    if (progressBar && progressText && progressPercent) {
+      const percentage = Math.round((current / total) * 100);
+      progressBar.style.width = `${percentage}%`;
+      progressText.textContent = `处理中 ${current}/${total}`;
+      progressPercent.textContent = `${percentage}%`;
+    }
+  }
+  
+  // 隐藏优化进度模态框
+  hideOptimizeProgressModal() {
+    const modal = document.getElementById('optimizeProgressModal');
+    if (modal) {
+      modal.classList.remove('active');
+      setTimeout(() => {
+        if (modal.parentNode) {
+          modal.parentNode.removeChild(modal);
+        }
+      }, 300);
+    }
   }
 
   // 保存日志
