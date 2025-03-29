@@ -1,0 +1,38 @@
+/* 工具提示组件样式 */
+
+/* 工具提示 */
+[data-tooltip] {
+  position: relative;
+}
+
+[data-tooltip]::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%) translateY(0);
+  background: var(--glass-bg);
+  color: var(--text-primary);
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--border-radius-sm);
+  font-size: var(--font-size-xs);
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  /* 使用更平滑的过渡效果 */
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-md);
+  z-index: 100;
+  /* 预先渲染以避免首次显示时的锯齿 */
+  will-change: transform, opacity;
+}
+
+[data-tooltip]:hover::after {
+  opacity: 1;
+  visibility: visible;
+  /* 减少移动幅度以使过渡更加平滑 */
+  transform: translateX(-50%) translateY(-8px);
+}

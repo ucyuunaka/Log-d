@@ -1,0 +1,97 @@
+/* 时间线组件样式 */
+
+/* 时间块可视化 */
+.time-blocks {
+  display: flex;
+  gap: 8px;
+  height: 120px;
+  align-items: flex-end;
+  margin-bottom: 5px;
+}
+
+.time-block {
+  flex: 1;
+  background: linear-gradient(to top, var(--primary-color), var(--accent-color));
+  border-radius: var(--border-radius-sm) var(--border-radius-sm) 0 0;
+  min-height: 10%;
+  transition: var(--transition-normal);
+}
+
+.time-block:hover {
+  transform: scaleY(1.05);
+}
+
+.time-labels {
+  display: flex;
+  gap: 8px;
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+}
+
+.time-labels span {
+  flex: 1;
+  text-align: center;
+}
+
+/* 热力图 */
+.activity-heatmap {
+  height: 80px;
+  background: var(--bg-secondary);
+  border-radius: var(--border-radius-sm);
+  margin-top: var(--space-md);
+  display: flex;
+  align-items: flex-end;
+  padding: var(--space-xs);
+  gap: 2px;
+}
+
+.heatmap-day {
+  flex: 1;
+  background: rgba(var(--primary-color-rgb), 0.1);
+  border-radius: 2px;
+  transition: var(--transition-normal);
+}
+
+.heatmap-day:hover {
+  transform: scaleY(1.05);
+}
+
+/* 标签页 */
+.tabs {
+  display: flex;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-lg);
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: var(--space-sm);
+}
+
+.tab-btn {
+  padding: var(--space-xs) var(--space-md);
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  transition: var(--transition-normal);
+  border-radius: var(--border-radius-sm);
+}
+
+.tab-btn:hover {
+  color: var(--primary-color);
+  background: var(--primary-light);
+}
+
+.tab-btn.active {
+  color: var(--primary-color);
+  font-weight: 500;
+  border-bottom: 2px solid var(--primary-color);
+}
+
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+  animation: fadeIn 0.5s ease;
+}

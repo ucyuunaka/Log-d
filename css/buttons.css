@@ -1,0 +1,254 @@
+/* 按钮组件样式 */
+
+/* 按钮基本样式 */
+.btn {
+  padding: var(--space-sm) var(--space-lg);
+  border-radius: var(--border-radius-sm);
+  font-family: var(--font-family);
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition-normal);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  border: none;
+  font-size: var(--font-size-base);
+  user-select: none;
+  position: relative;
+  overflow: hidden;
+  letter-spacing: 0.3px;
+}
+
+/* 按钮基本悬浮效果 */
+.btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  filter: brightness(1.05);
+}
+
+.btn:active:not(:disabled) {
+  transform: translateY(1px);
+  filter: brightness(0.95);
+  transition: all 0.1s;
+}
+
+.btn::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0) 60%);
+  transform: translate(-50%, -50%) scale(0);
+  opacity: 0;
+  transition: transform 0.6s, opacity 0.6s;
+}
+
+.btn:active::before {
+  transform: translate(-50%, -50%) scale(2);
+  opacity: 0.3;
+  transition: 0s;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  filter: grayscale(40%);
+}
+
+.btn i {
+  font-size: 0.9em;
+  transition: transform 0.3s cubic-bezier(0.17, 0.67, 0.3, 1.33);
+}
+
+.btn:hover:not(:disabled) i {
+  transform: translateY(-2px);
+}
+
+/* 主按钮 */
+.btn--primary {
+  background: linear-gradient(45deg, var(--primary-color), var(--primary-dark));
+  color: white;
+  box-shadow: 0 4px 12px rgba(var(--primary-color-rgb), 0.3);
+  text-shadow: 0 1px 1px rgba(0,0,0,0.2);
+}
+
+.btn--primary:hover:not(:disabled) {
+  background: linear-gradient(45deg, var(--primary-dark), var(--primary-color));
+  transform: translateY(-3px) scale(1.03);
+  box-shadow: 0 6px 18px rgba(var(--primary-color-rgb), 0.4);
+}
+
+.btn--primary:active:not(:disabled) {
+  transform: translateY(-1px) scale(1.01);
+  box-shadow: 0 2px 8px rgba(var(--primary-color-rgb), 0.35);
+  transition: all 0.1s;
+}
+
+/* 强调按钮 */
+.btn--accent {
+  background: linear-gradient(45deg, var(--accent-color), var(--accent-dark));
+  color: white;
+  box-shadow: 0 4px 12px rgba(var(--accent-color-rgb), 0.3);
+}
+
+.btn--accent:hover:not(:disabled) {
+  background: linear-gradient(45deg, var(--accent-dark), var(--accent-color));
+  transform: translateY(-3px) scale(1.03);
+  box-shadow: 0 6px 18px rgba(var(--accent-color-rgb), 0.4);
+}
+
+.btn--accent:active:not(:disabled) {
+  transform: translateY(-1px) scale(1.01);
+  box-shadow: 0 2px 8px rgba(var(--accent-color-rgb), 0.35);
+  transition: all 0.1s;
+}
+
+/* 危险按钮 */
+.btn--danger {
+  background: linear-gradient(45deg, var(--danger-color), #e43364);
+  color: white;
+  box-shadow: 0 4px 12px rgba(var(--danger-color-rgb), 0.3);
+}
+
+.btn--danger:hover:not(:disabled) {
+  background: linear-gradient(45deg, #e43364, var(--danger-color));
+  transform: translateY(-3px) scale(1.03);
+  box-shadow: 0 6px 18px rgba(var(--danger-color-rgb), 0.4);
+}
+
+.btn--danger:active:not(:disabled) {
+  transform: translateY(-1px) scale(1.01);
+  box-shadow: 0 2px 8px rgba(var(--danger-color-rgb), 0.35);
+  transition: all 0.1s;
+}
+
+/* 轮廓按钮 */
+.btn--outline {
+  background: transparent;
+  border: 1.5px solid var(--primary-color);
+  color: var(--primary-color);
+  position: relative;
+}
+
+.btn--outline::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--primary-light);
+  border-radius: inherit;
+  opacity: 0;
+  z-index: -1;
+  transition: opacity 0.3s;
+}
+
+.btn--outline:hover:not(:disabled) {
+  transform: translateY(-3px) scale(1.03);
+}
+
+.btn--outline:hover:not(:disabled)::after {
+  opacity: 1;
+}
+
+.btn--outline:active:not(:disabled) {
+  transform: scale(0.98);
+  transition: all 0.1s;
+}
+
+.btn--outline:active:not(:disabled)::after {
+  opacity: 0.8;
+}
+
+/* 圆形图标按钮 */
+.btn--icon {
+  padding: 0;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  color: var(--text-secondary);
+  transform-origin: center;
+}
+
+.btn--icon:hover:not(:disabled) {
+  color: var(--primary-color);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+  border-color: rgba(var(--primary-color-rgb), 0.3);
+}
+
+.btn--icon:active:not(:disabled) {
+  transform: translateY(1px);
+  box-shadow: var(--shadow-sm) inset;
+  transition: all 0.1s;
+}
+
+.btn--icon::before {
+  border-radius: 50%;
+}
+
+.btn--icon i {
+  font-size: 1.1rem;
+}
+
+/* 按钮尺寸变种 */
+.btn--sm {
+  padding: var(--space-xs) var(--space-md);
+  font-size: var(--font-size-sm);
+}
+
+.btn--lg {
+  padding: var(--space-md) var(--space-xl);
+  font-size: var(--font-size-md);
+}
+
+/* 按钮组 */
+.btn-group {
+  display: flex;
+  gap: 1px;
+}
+
+.btn-group .btn {
+  border-radius: 0;
+}
+
+.btn-group .btn:first-child {
+  border-top-left-radius: var(--border-radius-sm);
+  border-bottom-left-radius: var(--border-radius-sm);
+}
+
+.btn-group .btn:last-child {
+  border-top-right-radius: var(--border-radius-sm);
+  border-bottom-right-radius: var(--border-radius-sm);
+}
+
+/* 主题切换按钮特殊样式 */
+.theme-toggle {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 1.25rem;
+  cursor: pointer;
+  transition: var(--transition-normal);
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.theme-toggle:hover {
+  color: var(--primary-color);
+  background: var(--primary-light);
+}

@@ -1,0 +1,166 @@
+/* 卡片组件样式 */
+
+/* 卡片基础样式 - 星空效果卡片 */
+.card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  border-radius: var(--border-radius);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-md);
+  padding: var(--space-xl);
+  margin-bottom: var(--space-lg);
+  transition: var(--transition-normal);
+  position: relative;
+  overflow: hidden;
+}
+
+/* 卡片发光效果 */
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(120deg, 
+                  rgba(255, 255, 255, 0) 30%, 
+                  rgba(255, 255, 255, 0.05) 38%, 
+                  rgba(255, 255, 255, 0.05) 40%, 
+                  rgba(255, 255, 255, 0) 48%);
+  background-size: 200% 100%;
+  background-position: 100% 0;
+  transition: var(--transition-slow);
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  border-color: rgba(var(--primary-color-rgb), 0.3);
+  box-shadow: var(--shadow-lg), 0 0 15px rgba(var(--primary-color-rgb), 0.3);
+}
+
+.card:hover::before {
+  background-position: -100% 0;
+}
+
+/* 磨砂卡片变种 */
+.card--frosted {
+  background: rgba(255, 255, 255, 0.04);
+  border-width: 1.5px;
+  border-bottom-width: 1px;
+  border-top-color: rgba(255, 255, 255, 0.1);
+  border-left-color: rgba(255, 255, 255, 0.08);
+  border-right-color: rgba(255, 255, 255, 0.08);
+  border-bottom-color: rgba(255, 255, 255, 0.04);
+}
+
+/* 内容卡片变种 */
+.card--content {
+  padding: var(--space-xl);
+  border-radius: var(--border-radius-lg);
+  background: var(--bg-card);
+  box-shadow: var(--shadow-md);
+  transition: var(--transition-normal);
+  border: 1px solid var(--glass-border);
+}
+
+.card--content:hover {
+  box-shadow: var(--shadow-lg);
+}
+
+/* 空状态样式 */
+.empty-state {
+  text-align: center;
+  padding: var(--space-xl) var(--space-md);
+  color: var(--text-secondary);
+}
+
+.empty-state i {
+  font-size: 4rem;
+  margin-bottom: var(--space-md);
+  color: var(--primary-color);
+  opacity: 0.6;
+}
+
+/* 统计卡片 */
+.stats-card {
+  overflow: hidden;
+}
+
+.stats-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-md);
+}
+
+.stats-header h3 {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  font-weight: 600;
+  font-size: var(--font-size-md);
+  color: var(--primary-color);
+  margin: 0;
+}
+
+.last-update {
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-md);
+  margin-bottom: var(--space-lg);
+}
+
+.stat-item {
+  text-align: center;
+  padding: var(--space-sm);
+  background: var(--glass-bg);
+  border-radius: var(--border-radius-sm);
+  transition: var(--transition-normal);
+}
+
+.stat-item:hover {
+  transform: translateY(-3px);
+  background: rgba(var(--primary-color-rgb), 0.1);
+}
+
+.stat-value {
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  color: var(--primary-color);
+  margin-bottom: var(--space-xs);
+}
+
+.stat-label {
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+  white-space: nowrap;
+}
+
+/* 存储条 */
+.storage-info {
+  margin-bottom: var(--space-md);
+}
+
+.storage-text {
+  font-size: var(--font-size-xs);
+  margin-bottom: var(--space-xs);
+  color: var(--text-secondary);
+}
+
+.storage-bar {
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.storage-used {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+  transition: width 0.5s ease;
+}
