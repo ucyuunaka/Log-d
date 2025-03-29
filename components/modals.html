@@ -1,0 +1,234 @@
+<!-- 模板选择模态框 -->
+<div id="templatesModal" class="modal">
+  <div class="modal-content card">
+    <h3><i class="fas fa-magic"></i> 快速模板</h3>
+    <div class="template-list">
+      <button class="template-item" data-template="daily">
+        <i class="fas fa-calendar-day"></i>
+        <span>每日记录</span>
+        <small>记录今天的重要事项和感受</small>
+      </button>
+      <button class="template-item" data-template="gratitude">
+        <i class="fas fa-pray"></i>
+        <span>感恩记录</span>
+        <small>记录生活中值得感恩的事物</small>
+      </button>
+      <button class="template-item" data-template="idea">
+        <i class="fas fa-lightbulb"></i>
+        <span>创意灵感</span>
+        <small>记录突发奇想的创意和想法</small>
+      </button>
+      <button class="template-item" data-template="travel">
+        <i class="fas fa-plane"></i>
+        <span>旅行笔记</span>
+        <small>记录旅途中的见闻和感受</small>
+      </button>
+    </div>
+    <div class="modal-actions">
+      <button id="templateClose" class="btn outline">关闭</button>
+    </div>
+  </div>
+</div>
+
+<!-- 设置模态框 -->
+<div id="settingsModal" class="modal">
+  <div class="modal-content card">
+    <h3><i class="fas fa-cog"></i> 设置</h3>
+    <div class="settings-form">
+      <div class="setting-group">
+        <h4>外观</h4>
+        <div class="setting-item">
+          <label for="themeSetting">
+            <i class="fas fa-palette"></i> 界面主题
+          </label>
+          <select id="themeSetting">
+            <option value="dark">深空主题</option>
+            <option value="light">清新亮色</option>
+            <option value="auto">跟随系统</option>
+          </select>
+        </div>
+        <div class="setting-item">
+          <label for="fontSizeSetting">
+            <i class="fas fa-text-height"></i> 字体大小
+          </label>
+          <select id="fontSizeSetting">
+            <option value="small">小</option>
+            <option value="medium" selected>中</option>
+            <option value="large">大</option>
+          </select>
+        </div>
+      </div>
+      
+      <div class="setting-group">
+        <h4>编辑器</h4>
+        <div class="setting-item toggle">
+          <label for="autoSaveSetting">
+            <i class="fas fa-save"></i> 自动保存草稿
+          </label>
+          <label class="switch">
+            <input type="checkbox" id="autoSaveSetting">
+            <span class="slider round"></span>
+          </label>
+        </div>
+        <div class="setting-item toggle">
+          <label for="spellcheckSetting">
+            <i class="fas fa-spell-check"></i> 拼写检查
+          </label>
+          <label class="switch">
+            <input type="checkbox" id="spellcheckSetting" checked>
+            <span class="slider round"></span>
+          </label>
+        </div>
+      </div>
+      
+      <div class="setting-group">
+        <h4>数据</h4>
+        <div class="setting-item toggle">
+          <label for="compressImagesSetting">
+            <i class="fas fa-compress"></i> 自动压缩图片
+          </label>
+          <label class="switch">
+            <input type="checkbox" id="compressImagesSetting" checked>
+            <span class="slider round"></span>
+          </label>
+        </div>
+        <div class="setting-item toggle">
+          <label for="localBackupSetting">
+            <i class="fas fa-history"></i> 本地备份
+          </label>
+          <label class="switch">
+            <input type="checkbox" id="localBackupSetting">
+            <span class="slider round"></span>
+          </label>
+        </div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button id="settingsCancel" class="btn outline">取消</button>
+      <button id="settingsSave" class="btn accent">保存设置</button>
+    </div>
+  </div>
+</div>
+
+<!-- 快捷键模态框 -->
+<div id="shortcutsModal" class="modal">
+  <div class="modal-content card">
+    <h3><i class="fas fa-keyboard"></i> 键盘快捷键</h3>
+    <div class="shortcuts-list">
+      <div class="shortcut-item">
+        <span class="key-combo"><kbd>Ctrl</kbd> + <kbd>S</kbd></span>
+        <span class="key-desc">保存日志</span>
+      </div>
+      <div class="shortcut-item">
+        <span class="key-combo"><kbd>Ctrl</kbd> + <kbd>N</kbd></span>
+        <span class="key-desc">新建日志</span>
+      </div>
+      <div class="shortcut-item">
+        <span class="key-combo"><kbd>Ctrl</kbd> + <kbd>F</kbd></span>
+        <span class="key-desc">搜索日志</span>
+      </div>
+      <div class="shortcut-item">
+        <span class="key-combo"><kbd>Ctrl</kbd> + <kbd>I</kbd></span>
+        <span class="key-desc">插入图片</span>
+      </div>
+      <div class="shortcut-item">
+        <span class="key-combo"><kbd>F11</kbd></span>
+        <span class="key-desc">全屏编辑</span>
+      </div>
+      <div class="shortcut-item">
+        <span class="key-combo"><kbd>Esc</kbd></span>
+        <span class="key-desc">关闭弹窗</span>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button id="shortcutsClose" class="btn outline">关闭</button>
+    </div>
+  </div>
+</div>
+
+<!-- 统计详情模态框 -->
+<div id="statsModal" class="modal">
+  <div class="modal-content card">
+    <h3><i class="fas fa-chart-pie"></i> 日志统计</h3>
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="overview">概览</button>
+      <button class="tab-btn" data-tab="trends">趋势</button>
+      <button class="tab-btn" data-tab="insights">分析</button>
+    </div>
+    <div class="tab-content active" data-tab-content="overview">
+      <div class="stats-container">
+        <div class="stat-item">
+          <div class="stat-value" id="statTotalLogs">0</div>
+          <div class="stat-label">总日志数</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="statAvgWords">0</div>
+          <div class="stat-label">平均字数</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="statImagesCount">0</div>
+          <div class="stat-label">总图片数</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="statActiveDay">周一</div>
+          <div class="stat-label">最活跃日</div>
+        </div>
+      </div>
+      <div class="chart-container">
+        <canvas id="activityChart"></canvas>
+        <p class="chart-label">最近30天活动</p>
+      </div>
+    </div>
+    <div class="tab-content" data-tab-content="trends">
+      <div class="chart-container">
+        <canvas id="trendsChart"></canvas>
+        <p class="chart-label">月度活动趋势</p>
+      </div>
+      <div class="trend-summary">
+        <h4>活跃时段</h4>
+        <div class="time-blocks">
+          <div class="time-block" style="height: 30%;" data-tooltip="早晨: 18%"></div>
+          <div class="time-block" style="height: 20%;" data-tooltip="上午: 12%"></div>
+          <div class="time-block" style="height: 45%;" data-tooltip="下午: 27%"></div>
+          <div class="time-block" style="height: 70%;" data-tooltip="晚上: 43%"></div>
+        </div>
+        <div class="time-labels">
+          <span>早晨</span>
+          <span>上午</span>
+          <span>下午</span>
+          <span>晚上</span>
+        </div>
+      </div>
+    </div>
+    <div class="tab-content" data-tab-content="insights">
+      <div class="mood-analysis">
+        <h4>情绪分析</h4>
+        <div class="mood-chart">
+          <canvas id="moodChart"></canvas>
+        </div>
+      </div>
+      <div class="word-cloud-container">
+        <h4>常用词云</h4>
+        <div class="word-cloud" id="wordCloud">
+          <!-- 词云将由JS动态生成 -->
+        </div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button id="statsExport" class="btn outline">导出数据</button>
+      <button id="statsClose" class="btn outline">关闭</button>
+    </div>
+  </div>
+</div>
+
+<!-- 确认对话框 -->
+<div id="confirmModal" class="modal">
+  <div class="modal-content card">
+    <h3 id="confirmModalTitle">确认操作</h3>
+    <p id="confirmModalMessage">您确定要执行此操作吗？此操作无法撤销。</p>
+    <div class="modal-actions">
+      <button id="confirmCancel" class="btn outline">取消</button>
+      <button id="confirmAction" class="btn danger">确认</button>
+    </div>
+  </div>
+</div>

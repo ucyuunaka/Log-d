@@ -1,0 +1,34 @@
+<section class="image-upload-section card">
+  <div class="section-header">
+    <h2><i class="fas fa-images" aria-hidden="true"></i> 图片附件</h2>
+    <div class="section-actions">
+      <button id="pasteFromClipboard" class="btn outline btn-sm" aria-label="从剪贴板粘贴" data-tooltip="从剪贴板粘贴">
+        <i class="fas fa-clipboard"></i> 粘贴
+      </button>
+      <button id="captureScreen" class="btn outline btn-sm" aria-label="截图" data-tooltip="屏幕截图">
+        <i class="fas fa-camera"></i> 截图
+      </button>
+    </div>
+  </div>
+  <div class="upload-area" id="dropZone" role="region" aria-labelledby="dropZoneLabel">
+    <div class="upload-prompt">
+      <i class="fas fa-cloud-upload-alt" aria-hidden="true"></i>
+      <p id="dropZoneLabel">拖放图片到这里或点击选择文件</p>
+      <small>支持JPG、PNG、GIF等格式（最大5MB）</small>
+    </div>
+    <input type="file" id="image-upload" accept="image/*" multiple class="image-input"
+      aria-labelledby="dropZoneLabel" />
+  </div>
+  <div id="image-preview-container" class="image-grid"></div>
+  <div class="upload-controls">
+    <button id="arrangeImages" class="btn outline btn-sm" aria-label="排序图片" data-tooltip="排序图片">
+      <i class="fas fa-sort"></i> 排序
+    </button>
+    <button id="optimize-images" class="btn outline btn-sm" aria-label="优化图片" data-tooltip="优化图片质量">
+      <i class="fas fa-compress-arrows-alt"></i> 优化
+    </button>
+    <button id="clear-images" class="btn outline btn-sm danger">
+      <i class="fas fa-trash-alt" aria-hidden="true"></i> 清空图片
+    </button>
+  </div>
+</section>

@@ -1,33 +1,20 @@
 import stateManager from './state-manager.js';
 import eventHandlers from './event-handlers.js';
 import { utils, THEME_STORAGE_KEY } from './utils.js';
+import componentLoader from './component-loader.js';
 
 // 主应用模块 - 只负责初始化和协调
 class App {
   constructor() {
-    // DOM元素缓存
-    this.dom = {
-      editorContainer: document.getElementById('editor-container'),
-      imageUpload: document.getElementById('image-upload'),
-      dropZone: document.getElementById('dropZone'),
-      imagePreviewContainer: document.getElementById('image-preview-container'),
-      clearImagesBtn: document.getElementById('clear-images'),
-      saveLogBtn: document.getElementById('saveLog'),
-      clearAllLogsBtn: document.getElementById('clearAllLogs'),
-      logList: document.getElementById('logList'),
-      wordCount: document.getElementById('wordCount'),
-      searchInput: document.getElementById('searchInput'),
-      dateFilter: document.getElementById('dateFilter'),
-      toastContainer: document.getElementById('toastContainer'),
-      // 添加缺失的DOM元素引用
-      resetLogBtn: document.getElementById('resetLog'),
-      clearFilters: document.getElementById('clearFilters'),
-      exportLogs: document.getElementById('exportLogs'),
-      importLogs: document.getElementById('importLogs'),
-      editorFullscreen: document.getElementById('editorFullscreen'),
-      quickTemplate: document.getElementById('quickTemplate'),
-      themeToggle: document.getElementById('themeToggle')
-    };
+    this.componentsLoaded = false;
+    this.componentsQueue = [
+      { path: 'components/header.html', target: '#header-container' },
+      { path: 'components/editor.html', target: '#editor-section-container' },
+      { path: 'components/image-upload.html', target: '#image-upload-container' },
+      { path: 'components/logs-list.html', target: '#logs-section-container' },
+      { path: 'components/footer.html', target: '#footer-container' },
+      { path: 'components/modals.html', target: '#modals-container' }
+    ];
   }
 
   // 初始化应用
@@ -41,45 +28,90 @@ class App {
   }
 
   // 实际初始化逻辑
-  initApp() {
-    // 初始化主题
+  async initApp() {
+    console.log('正在初始化应用...');
+    
+    // 1. 首先加载所有组件
+    await this.loadAllComponents();
+
+    // 2. 初始化主题
     this.initTheme();
     
-    // 初始化状态管理器
+    // 3. DOM元素引用
+    this.initDomReferences();
+    
+    // 4. 初始化状态管理器
     stateManager.initDomElements(this.dom);
     
-    // 初始化事件处理器
+    // 5. 初始化事件处理器
     eventHandlers.initDomElements(this.dom);
     
-    // 初始化编辑器
+    // 6. 初始化编辑器
     this.initEditor();
     
-    // 设置事件监听
+    // 7. 设置事件监听
     eventHandlers.setupEventListeners();
     this.setupAdditionalEventListeners();
     
-    // 加载初始数据
+    // 8. 加载初始数据
     eventHandlers.loadLogs();
     
-    // 初始化字数统计
+    // 9. 初始化字数统计
     eventHandlers.updateWordCount();
     
-    // 监听自定义事件
+    // 10. 监听自定义事件
     document.addEventListener('showFullImage', (event) => {
       eventHandlers.showFullImage(event.detail);
     });
     
     console.log('应用初始化完成');
   }
+
+  // 加载所有组件
+  async loadAllComponents() {
+    try {
+      console.log('正在加载页面组件...');
+      await componentLoader.loadComponents(this.componentsQueue);
+      this.componentsLoaded = true;
+      console.log('所有组件加载完成');
+    } catch (error) {
+      console.error('组件加载失败:', error);
+    }
+  }
   
+  // DOM元素引用初始化
+  initDomReferences() {
+    console.log('正在初始化DOM引用...');
+    // DOM元素缓存 - 在组件加载完成后
+    this.dom = {
+      editorContainer: document.getElementById('editor-container'),
+      imageUpload: document.getElementById('image-upload'),
+      dropZone: document.getElementById('dropZone'),
+      imagePreviewContainer: document.getElementById('image-preview-container'),
+      clearImagesBtn: document.getElementById('clear-images'),
+      saveLogBtn: document.getElementById('saveLog'),
+      clearAllLogsBtn: document.getElementById('clearAllLogs'),
+      logList: document.getElementById('logList'),
+      wordCount: document.getElementById('wordCount'),
+      searchInput: document.getElementById('searchInput'),
+      dateFilter: document.getElementById('dateFilter'),
+      toastContainer: document.getElementById('toastContainer'),
+      resetLogBtn: document.getElementById('resetLog'),
+      clearFilters: document.getElementById('clearFilters'),
+      exportLogs: document.getElementById('exportLogs'),
+      importLogs: document.getElementById('importLogs'),
+      editorFullscreen: document.getElementById('editorFullscreen'),
+      quickTemplate: document.getElementById('quickTemplate'),
+      themeToggle: document.getElementById('themeToggle')
+    };
+  }
+
   // 初始化主题
   initTheme() {
+    console.log('正在初始化主题...');
     // 应用保存的主题偏好
     const preferredTheme = utils.getPreferredTheme();
     utils.setTheme(preferredTheme);
-    
-    // 更新主题切换按钮图标
-    this.updateThemeToggleIcon(preferredTheme);
     
     // 监听系统主题变化
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
@@ -93,45 +125,52 @@ class App {
   
   // 更新主题切换按钮图标
   updateThemeToggleIcon(theme) {
+    if (!this.dom?.themeToggle) return;
+    
     const themeIcon = this.dom.themeToggle.querySelector('i');
-    if (theme === 'dark') {
-      themeIcon.className = 'fas fa-moon';
-    } else {
-      themeIcon.className = 'fas fa-sun';
+    if (themeIcon) {
+      themeIcon.className = theme === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
     }
   }
   
   // 设置其他事件监听器
   setupAdditionalEventListeners() {
+    if (!this.componentsLoaded) {
+      console.error('组件未加载完成，无法设置事件监听');
+      return;
+    }
+    
+    console.log('正在设置附加事件监听器...');
+    
     // 重置日志按钮
-    this.dom.resetLogBtn.addEventListener('click', () => {
+    this.dom.resetLogBtn?.addEventListener('click', () => {
       if (confirm('确定要清空当前编辑内容吗？')) {
         eventHandlers.resetEditorAndImages();
       }
     });
     
     // 清除筛选条件
-    this.dom.clearFilters.addEventListener('click', () => {
+    this.dom.clearFilters?.addEventListener('click', () => {
       this.dom.searchInput.value = '';
       this.dom.dateFilter.value = '';
       eventHandlers.filterLogs();
     });
     
     // 全屏编辑功能
-    this.dom.editorFullscreen.addEventListener('click', this.toggleFullscreenEditor.bind(this));
+    this.dom.editorFullscreen?.addEventListener('click', this.toggleFullscreenEditor.bind(this));
     
     // 模板按钮
-    this.dom.quickTemplate.addEventListener('click', () => {
+    this.dom.quickTemplate?.addEventListener('click', () => {
       const templatesModal = document.getElementById('templatesModal');
       templatesModal.classList.add('active');
       
       // 关闭按钮
-      document.getElementById('templateClose').addEventListener('click', () => {
+      document.getElementById('templateClose')?.addEventListener('click', () => {
         templatesModal.classList.remove('active');
       });
       
       // 点击模板应用
-      document.querySelectorAll('.template-item').forEach(item => {
+      document.querySelectorAll('.template-item')?.forEach(item => {
         item.addEventListener('click', (e) => {
           const templateType = e.currentTarget.dataset.template;
           this.applyTemplate(templateType);
@@ -141,10 +180,10 @@ class App {
     });
     
     // 主题切换
-    this.dom.themeToggle.addEventListener('click', () => {
+    this.dom.themeToggle?.addEventListener('click', () => {
       const newTheme = utils.toggleTheme();
       this.updateThemeToggleIcon(newTheme);
-      showToast(`已切换为${newTheme === 'dark' ? '深色' : '浅色'}主题`, 'info', this.dom.toastContainer);
+      this.showToast(`已切换为${newTheme === 'dark' ? '深色' : '浅色'}主题`, 'info');
     });
     
     // 设置面板中的主题选择
@@ -152,12 +191,83 @@ class App {
       const selectedTheme = e.target.value;
       utils.setTheme(selectedTheme);
       this.updateThemeToggleIcon(utils.getPreferredTheme());
-      showToast(`主题设置已更新`, 'success', this.dom.toastContainer);
+      this.showToast(`主题设置已更新`, 'success');
+    });
+
+    // 统计按钮
+    document.getElementById('statsButton')?.addEventListener('click', () => {
+      const statsModal = document.getElementById('statsModal');
+      statsModal.classList.add('active');
+      
+      // 关闭按钮
+      document.getElementById('statsClose')?.addEventListener('click', () => {
+        statsModal.classList.remove('active');
+      });
+
+      // 标签页切换
+      document.querySelectorAll('.tab-btn')?.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const tabName = btn.dataset.tab;
+          // 激活按钮
+          document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          // 显示内容
+          document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+          document.querySelector(`[data-tab-content="${tabName}"]`).classList.add('active');
+        });
+      });
+    });
+
+    // 快捷键按钮
+    document.getElementById('showShortcuts')?.addEventListener('click', (e) => {
+      e.preventDefault();
+      const shortcutsModal = document.getElementById('shortcutsModal');
+      shortcutsModal.classList.add('active');
+      
+      document.getElementById('shortcutsClose')?.addEventListener('click', () => {
+        shortcutsModal.classList.remove('active');
+      });
+    });
+
+    // 设置按钮
+    document.getElementById('showSettings')?.addEventListener('click', (e) => {
+      if (e.currentTarget.tagName === 'A') e.preventDefault();
+      const settingsModal = document.getElementById('settingsModal');
+      settingsModal.classList.add('active');
+      
+      document.getElementById('settingsCancel')?.addEventListener('click', () => {
+        settingsModal.classList.remove('active');
+      });
+      
+      document.getElementById('settingsSave')?.addEventListener('click', () => {
+        // TODO: 保存设置逻辑
+        settingsModal.classList.remove('active');
+        this.showToast('设置已保存', 'success');
+      });
+    });
+
+    // 为所有模态框添加Esc关闭事件
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        document.querySelectorAll('.modal.active').forEach(modal => {
+          modal.classList.remove('active');
+        });
+      }
+    });
+
+    // 点击模态框背景关闭
+    document.querySelectorAll('.modal').forEach(modal => {
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+          modal.classList.remove('active');
+        }
+      });
     });
   }
 
   // 初始化编辑器
   initEditor() {
+    console.log('正在初始化编辑器...');
     const quill = new Quill(this.dom.editorContainer, {
       modules: {
         toolbar: [
@@ -181,6 +291,8 @@ class App {
     quill.on('text-change', utils.debounce(() => {
       eventHandlers.updateWordCount();
     }, 300));
+    
+    console.log('编辑器初始化完成');
   }
   
   // 切换全屏编辑模式
@@ -210,7 +322,40 @@ class App {
     if(template && stateManager.quill) {
       stateManager.quill.setText('');
       stateManager.quill.clipboard.dangerouslyPasteHTML(0, template.replace(/\n/g, '<br>'));
-      showToast('已应用模板', 'success', this.dom.toastContainer);
+      this.showToast('已应用模板', 'success');
+    }
+  }
+
+  // 显示提示消息
+  showToast(message, type) {
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.innerHTML = `
+      <i class="fas ${this.getToastIcon(type)}"></i>
+      <span>${message}</span>
+    `;
+    
+    this.dom.toastContainer.appendChild(toast);
+    setTimeout(() => toast.classList.add('show'), 10);
+    
+    // 自动消失
+    setTimeout(() => {
+      toast.classList.remove('show');
+      setTimeout(() => {
+        if (toast.parentNode) {
+          this.dom.toastContainer.removeChild(toast);
+        }
+      }, 300);
+    }, 3000);
+  }
+
+  // 获取通知图标
+  getToastIcon(type) {
+    switch (type) {
+      case 'success': return 'fa-check-circle';
+      case 'error': return 'fa-exclamation-circle';
+      case 'warning': return 'fa-exclamation-triangle';
+      default: return 'fa-info-circle';
     }
   }
 }
@@ -220,36 +365,3 @@ const app = new App();
 app.init();
 
 export default app;
-
-// 辅助函数 - 显示通知
-function showToast(message, type, container) {
-  const toast = document.createElement('div');
-  toast.className = `toast ${type}`;
-  toast.innerHTML = `
-    <i class="fas ${getToastIcon(type)}"></i>
-    <span>${message}</span>
-  `;
-  
-  container.appendChild(toast);
-  setTimeout(() => toast.classList.add('show'), 10);
-  
-  // 自动消失
-  setTimeout(() => {
-    toast.classList.remove('show');
-    setTimeout(() => {
-      if (toast.parentNode) {
-        container.removeChild(toast);
-      }
-    }, 300);
-  }, 3000);
-}
-
-// 获取通知图标
-function getToastIcon(type) {
-  switch (type) {
-    case 'success': return 'fa-check-circle';
-    case 'error': return 'fa-exclamation-circle';
-    case 'warning': return 'fa-exclamation-triangle';
-    default: return 'fa-info-circle';
-  }
-}

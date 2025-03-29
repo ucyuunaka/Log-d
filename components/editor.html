@@ -1,0 +1,38 @@
+<section class="editor-section card frosted">
+  <div class="section-header">
+    <h2><i class="fas fa-pen-fancy"></i> 撰写日志</h2>
+    <div class="editor-tools">
+      <button id="editorFullscreen" class="btn icon" aria-label="全屏编辑" data-tooltip="全屏编辑">
+        <i class="fas fa-expand-alt"></i>
+      </button>
+      <button id="quickTemplate" class="btn icon" aria-label="快速模板" data-tooltip="使用模板">
+        <i class="fas fa-magic"></i>
+      </button>
+    </div>
+  </div>
+  <div id="editor-container" aria-label="日志编辑器"></div>
+
+  <div class="editor-footer">
+    <div class="word-count">
+      <i class="fas fa-font"></i> <span id="wordCount">0</span> 字
+    </div>
+    <div class="mood-selector">
+      <span class="mood-label">心情:</span>
+      <div class="mood-options">
+        <button class="mood-btn" data-mood="happy" data-tooltip="开心"><i class="fas fa-smile"></i></button>
+        <button class="mood-btn" data-mood="sad" data-tooltip="伤心"><i class="fas fa-frown"></i></button>
+        <button class="mood-btn" data-mood="meh" data-tooltip="一般"><i class="fas fa-meh"></i></button>
+        <button class="mood-btn" data-mood="angry" data-tooltip="生气"><i class="fas fa-angry"></i></button>
+        <button class="mood-btn" data-mood="excited" data-tooltip="兴奋"><i class="fas fa-grin-stars"></i></button>
+      </div>
+    </div>
+    <div class="editor-actions">
+      <button id="resetLog" class="btn outline" aria-label="重置">
+        <i class="fas fa-redo-alt" aria-hidden="true"></i> 重置
+      </button>
+      <button id="saveLog" class="btn accent">
+        <i class="fas fa-save" aria-hidden="true"></i> 保存日志
+      </button>
+    </div>
+  </div>
+</section>
