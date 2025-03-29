@@ -85,6 +85,18 @@
   letter-spacing: 0.3px;
 }
 
+/* 按钮基本悬浮效果 - 添加通用悬浮效果 */
+.btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  filter: brightness(1.05);
+}
+
+.btn:active:not(:disabled) {
+  transform: translateY(1px);
+  filter: brightness(0.95);
+  transition: all 0.1s;
+}
+
 .btn::before {
   content: '';
   position: absolute;
@@ -134,7 +146,9 @@
 }
 
 .btn.primary:active:not(:disabled) {
-  transform: translateY(-1px);
+  transform: translateY(-1px) scale(1.01);
+  box-shadow: 0 2px 8px rgba(var(--primary-color-rgb), 0.35);
+  transition: all 0.1s;
 }
 
 /* 强调按钮 */
@@ -150,6 +164,12 @@
   box-shadow: 0 6px 18px rgba(var(--accent-color-rgb), 0.4);
 }
 
+.btn.accent:active:not(:disabled) {
+  transform: translateY(-1px) scale(1.01);
+  box-shadow: 0 2px 8px rgba(var(--accent-color-rgb), 0.35);
+  transition: all 0.1s;
+}
+
 /* 危险按钮 */
 .btn.danger {
   background: linear-gradient(45deg, var(--danger-color), #e43364);
@@ -161,6 +181,12 @@
   background: linear-gradient(45deg, #e43364, var(--danger-color));
   transform: translateY(-3px) scale(1.03);
   box-shadow: 0 6px 18px rgba(var(--danger-color-rgb), 0.4);
+}
+
+.btn.danger:active:not(:disabled) {
+  transform: translateY(-1px) scale(1.01);
+  box-shadow: 0 2px 8px rgba(var(--danger-color-rgb), 0.35);
+  transition: all 0.1s;
 }
 
 /* 轮廓按钮 */
@@ -193,6 +219,15 @@
   opacity: 1;
 }
 
+.btn.outline:active:not(:disabled) {
+  transform: scale(0.98);
+  transition: all 0.1s;
+}
+
+.btn.outline:active:not(:disabled)::after {
+  opacity: 0.8;
+}
+
 /* 圆形图标按钮 */
 .btn.icon {
   padding: 0;
@@ -216,6 +251,13 @@
   /* 减少变化幅度，使过渡更加平滑 */
   transform: translateY(-2px);
   box-shadow: var(--shadow-sm);
+  border-color: rgba(var(--primary-color-rgb), 0.3);
+}
+
+.btn.icon:active:not(:disabled) {
+  transform: translateY(1px);
+  box-shadow: var(--shadow-sm) inset;
+  transition: all 0.1s;
 }
 
 .btn.icon::before {
