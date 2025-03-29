@@ -59,11 +59,6 @@ class App {
     // 9. 初始化字数统计
     eventHandlers.updateWordCount();
     
-    // 10. 监听自定义事件
-    document.addEventListener('showFullImage', (event) => {
-      eventHandlers.showFullImage(event.detail);
-    });
-    
     console.log('应用初始化完成');
   }
 
@@ -98,8 +93,6 @@ class App {
       toastContainer: document.getElementById('toastContainer'),
       resetLogBtn: document.getElementById('resetLog'),
       clearFilters: document.getElementById('clearFilters'),
-      exportLogs: document.getElementById('exportLogs'),
-      importLogs: document.getElementById('importLogs'),
       editorFullscreen: document.getElementById('editorFullscreen'),
       quickTemplate: document.getElementById('quickTemplate'),
       themeToggle: document.getElementById('themeToggle')
@@ -144,9 +137,7 @@ class App {
     
     // 重置日志按钮
     this.dom.resetLogBtn?.addEventListener('click', () => {
-      if (confirm('确定要清空当前编辑内容吗？')) {
-        eventHandlers.resetEditorAndImages();
-      }
+      eventHandlers.resetEditorAndImages();
     });
     
     // 清除筛选条件
@@ -194,41 +185,6 @@ class App {
       this.showToast(`主题设置已更新`, 'success');
     });
 
-    // 统计按钮
-    document.getElementById('statsButton')?.addEventListener('click', () => {
-      const statsModal = document.getElementById('statsModal');
-      statsModal.classList.add('active');
-      
-      // 关闭按钮
-      document.getElementById('statsClose')?.addEventListener('click', () => {
-        statsModal.classList.remove('active');
-      });
-
-      // 标签页切换
-      document.querySelectorAll('.tab-btn')?.forEach(btn => {
-        btn.addEventListener('click', () => {
-          const tabName = btn.dataset.tab;
-          // 激活按钮
-          document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-          btn.classList.add('active');
-          // 显示内容
-          document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-          document.querySelector(`[data-tab-content="${tabName}"]`).classList.add('active');
-        });
-      });
-    });
-
-    // 快捷键按钮
-    document.getElementById('showShortcuts')?.addEventListener('click', (e) => {
-      e.preventDefault();
-      const shortcutsModal = document.getElementById('shortcutsModal');
-      shortcutsModal.classList.add('active');
-      
-      document.getElementById('shortcutsClose')?.addEventListener('click', () => {
-        shortcutsModal.classList.remove('active');
-      });
-    });
-
     // 设置按钮
     document.getElementById('showSettings')?.addEventListener('click', (e) => {
       if (e.currentTarget.tagName === 'A') e.preventDefault();
@@ -240,7 +196,6 @@ class App {
       });
       
       document.getElementById('settingsSave')?.addEventListener('click', () => {
-        // TODO: 保存设置逻辑
         settingsModal.classList.remove('active');
         this.showToast('设置已保存', 'success');
       });
@@ -263,6 +218,38 @@ class App {
         }
       });
     });
+
+    // 心情选择按钮
+    const moodButtons = document.querySelectorAll('.mood-btn');
+    if (moodButtons.length > 0) {
+      moodButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          // 移除所有按钮的active类
+          moodButtons.forEach(b => b.classList.remove('active'));
+          
+          // 给当前点击的按钮添加active类
+          btn.classList.add('active');
+          
+          // 保存选中的心情到状态管理器
+          const selectedMood = btn.dataset.mood;
+          stateManager.setCurrentMood(selectedMood);
+          
+          this.showToast(`已选择心情: ${this.getMoodLabel(selectedMood)}`, 'info');
+        });
+      });
+    }
+  }
+
+  // 获取心情文本标签
+  getMoodLabel(mood) {
+    const moodLabels = {
+      'happy': '开心',
+      'sad': '伤心',
+      'meh': '一般',
+      'angry': '生气',
+      'excited': '兴奋'
+    };
+    return moodLabels[mood] || '未指定';
   }
 
   // 初始化编辑器

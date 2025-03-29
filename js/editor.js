@@ -33,7 +33,8 @@ export class EditorManager {
   // 更新字数统计
   updateWordCount() {
     const text = this.quill.getText().trim();
-    const count = text ? text.split(/\s+/).length : 0;
+    // 使用中文友好的字数统计方法
+    const count = text ? text.replace(/\s+/g, '').length : 0;
     this.wordCountElement.textContent = count;
   }
 

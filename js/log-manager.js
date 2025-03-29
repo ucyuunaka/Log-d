@@ -215,8 +215,19 @@ export class LogManager {
         return false;
       }
       
-      // 创建日志对象
-      const logEntry = this.createLogEntry(textContent, htmlContent, delta, images);
+      // 获取当前心情
+      const mood = stateManager.getCurrentMood();
+      
+      // 创建日志对象，包含心情信息
+      const logEntry = {
+        id: Date.now().toString(),
+        content: textContent,
+        html: stateManager.getEditorHTML(),
+        images: images || [],
+        timestamp: new Date().toISOString(),
+        mood: mood || 'meh' // 默认为"一般"心情
+      };
+      
       const entrySize = new Blob([JSON.stringify(logEntry)]).size;
       
       if (!hasSufficientStorage(entrySize)) {
@@ -240,6 +251,12 @@ export class LogManager {
       
       showToast('日志保存成功', 'success', this.toastContainer);
       this.loadLogs();
+      
+      // 重置心情按钮状态
+      document.querySelectorAll('.mood-btn').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      
       return true;
       
     } catch (error) {

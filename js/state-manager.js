@@ -12,6 +12,7 @@ class StateManager {
     this.currentLogs = [];
     this.activeModal = null;
     this.domElements = null;
+    this.currentMood = null; // 添加当前心情状态
   }
 
   // 初始化DOM元素引用
@@ -97,13 +98,25 @@ class StateManager {
     return hasText || hasImages;
   }
 
+  // 设置当前心情
+  setCurrentMood(mood) {
+    this.currentMood = mood;
+  }
+  
+  // 获取当前心情
+  getCurrentMood() {
+    return this.currentMood;
+  }
+
   // 重置所有状态
   resetState() {
     this.resetEditor();
     this.clearImages();
+    this.currentMood = null; // 重置心情
     // 不重置日志列表，因为它是从存储读取的
     this.activeModal = null;
   }
 }
 
+// 导出状态管理器实例
 export default new StateManager();

@@ -1,5 +1,5 @@
 import stateManager, { LOG_STORAGE_KEY, MAX_IMAGE_SIZE, IMAGE_QUALITY } from './state-manager.js';
-import { utils, showToast, hasSufficientStorage, getLogsFromStorage } from './utils.js';
+import { utils, showToast, hasSufficientStorage, getLogsFromStorage, showConfirmDialog } from './utils.js';
 
 // 事件处理器模块
 class EventHandlers {
@@ -48,12 +48,6 @@ class EventHandlers {
     
     // 窗口关闭前提示
     window.addEventListener('beforeunload', this.handleBeforeUnload.bind(this));
-    
-    // 导出日志
-    this.dom.exportLogs.addEventListener('click', this.handleExportLogs.bind(this));
-    
-    // 导入日志
-    this.dom.importLogs.addEventListener('click', this.handleImportLogs.bind(this));
   }
 
   // 拖放处理
@@ -263,13 +257,19 @@ class EventHandlers {
 
   // 重置编辑器和图片状态
   resetEditorAndImages() {
-    if (stateManager.quill) {
-      stateManager.quill.setText('');
-    }
-    stateManager.clearImages();
-    this.updateImagePreview();
-    this.updateWordCount();
-    showToast('已重置编辑内容', 'info', this.dom.toastContainer);
+    showConfirmDialog(
+      '确认重置',
+      '确定要清空当前编辑内容吗？',
+      () => {
+        if (stateManager.quill) {
+          stateManager.quill.setText('');
+        }
+        stateManager.clearImages();
+        this.updateImagePreview();
+        this.updateWordCount();
+        showToast('已重置编辑内容', 'info', this.dom.toastContainer);
+      }
+    );
   }
 
   // 更新字数统计
@@ -490,21 +490,29 @@ class EventHandlers {
 
   // 删除日志
   deleteLog(logId) {
-    if (!confirm('确定要删除这条日志吗？此操作不可恢复！')) return;
-    
-    const logs = getLogsFromStorage().filter(log => log.id !== logId);
-    localStorage.setItem(LOG_STORAGE_KEY, JSON.stringify(logs));
-    this.loadLogs();
-    showToast('日志已删除', 'success', this.dom.toastContainer);
+    showConfirmDialog(
+      '确认删除',
+      '确定要删除这条日志吗？此操作不可恢复！',
+      () => {
+        const logs = getLogsFromStorage().filter(log => log.id !== logId);
+        localStorage.setItem(LOG_STORAGE_KEY, JSON.stringify(logs));
+        this.loadLogs();
+        showToast('日志已删除', 'success', this.dom.toastContainer);
+      }
+    );
   }
 
   // 确认清空所有日志
   confirmClearAllLogs() {
-    if (!confirm('确定要清空所有日志吗？此操作不可恢复！')) return;
-    
-    localStorage.setItem(LOG_STORAGE_KEY, '[]');
-    this.loadLogs();
-    showToast('所有日志已清空', 'success', this.dom.toastContainer);
+    showConfirmDialog(
+      '确认清空',
+      '确定要清空所有日志吗？此操作无法撤销！',
+      () => {
+        localStorage.setItem(LOG_STORAGE_KEY, '[]');
+        this.loadLogs();
+        showToast('所有日志已清空', 'success', this.dom.toastContainer);
+      }
+    );
   }
 
   // 窗口关闭前处理
@@ -513,46 +521,6 @@ class EventHandlers {
       e.preventDefault();
       e.returnValue = '您有未保存的内容，确定要离开吗？';
     }
-  }
-
-  // 处理导出日志
-  handleExportLogs() {
-    const result = utils.exportLogsToJson(`log-d-backup-${new Date().toISOString().slice(0, 10)}.json`);
-    showToast(result.message, result.success ? 'success' : 'warning', this.dom.toastContainer);
-  }
-
-  // 处理导入日志
-  handleImportLogs() {
-    // 创建隐藏的文件输入元素
-    const fileInput = document.createElement('input');
-    fileInput.type = 'file';
-    fileInput.accept = '.json';
-    fileInput.style.display = 'none';
-    document.body.appendChild(fileInput);
-    
-    fileInput.onchange = async (e) => {
-      if (e.target.files.length === 0) return;
-      
-      try {
-        showToast('正在导入日志...', 'info', this.dom.toastContainer);
-        
-        // 确认导入模式
-        const replaceAll = confirm('是否完全替换当前日志？\n- 点击"确定"将替换所有现有日志\n- 点击"取消"将合并导入数据和现有数据');
-        const mode = replaceAll ? 'replace' : 'merge';
-        
-        const result = await utils.importLogsFromJson(e.target.files[0], mode);
-        showToast(result.message, 'success', this.dom.toastContainer);
-        
-        // 重新加载日志列表
-        this.loadLogs();
-      } catch (error) {
-        showToast(error.message, 'error', this.dom.toastContainer);
-      } finally {
-        document.body.removeChild(fileInput);
-      }
-    };
-    
-    fileInput.click();
   }
 }
 

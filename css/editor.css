@@ -278,10 +278,13 @@
   align-items: center;
   cursor: pointer;
   opacity: 0;
-  transition: var(--transition-bounce);
+  /* 使用更平滑的过渡效果 */
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   transform: scale(0.8);
   z-index: 3;
   box-shadow: var(--shadow-sm);
+  /* 确保变换从中心开始 */
+  transform-origin: center;
 }
 
 .preview-image-container:hover .remove-image-btn {
@@ -290,7 +293,8 @@
 }
 
 .remove-image-btn:hover {
-  transform: scale(1.2) rotate(90deg);
+  /* 减少旋转角度，避免视觉突变 */
+  transform: scale(1.1) rotate(0deg);
   background: linear-gradient(45deg, var(--danger-color), #ff6b81);
 }
 
@@ -489,10 +493,20 @@
   border: 1.5px solid var(--glass-border);
   color: var(--text-secondary);
   cursor: pointer;
-  transition: var(--transition-bounce);
+  /* 更改为更平滑的过渡效果 */
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: var(--shadow-sm);
   overflow: hidden;
   position: relative;
+  /* 确保变换从中心开始 */
+  transform-origin: center;
+}
+
+.mood-btn:hover {
+  /* 减少变化幅度 */
+  transform: translateY(-2px);
+  border-color: var(--primary-color);
+  color: var(--primary-color);
 }
 
 .mood-btn::before {
@@ -505,12 +519,6 @@
   background: radial-gradient(circle at center, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 70%);
   opacity: 0;
   transition: opacity 0.3s;
-}
-
-.mood-btn:hover {
-  transform: translateY(-3px);
-  border-color: var(--primary-color);
-  color: var(--primary-color);
 }
 
 .mood-btn:hover::before {

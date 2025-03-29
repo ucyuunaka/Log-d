@@ -76,119 +76,27 @@ export const utils = {
 // 存储相关功能
 export function getLogsFromStorage() {
   try {
-    return JSON.parse(localStorage.getItem(LOG_STORAGE_KEY) || '[]');
-  } catch (error) {
-    console.error('解析日志数据失败:', error);
+    const logs = JSON.parse(localStorage.getItem(LOG_STORAGE_KEY)) || [];
+    return logs;
+  } catch (e) {
+    console.error('加载日志失败:', e);
     return [];
   }
 }
 
 export function getStorageUsage() {
-  try {
-    const logs = getLogsFromStorage();
-    const used = new Blob([JSON.stringify(logs)]).size;
-    return {
-      used,
-      total: STORAGE_LIMIT,
-      remaining: (STORAGE_LIMIT - used) / STORAGE_LIMIT
-    };
-  } catch (error) {
-    console.error('存储空间计算失败:', error);
-    return { used: 0, total: STORAGE_LIMIT, remaining: 1 };
+  let total = 0;
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    const value = localStorage.getItem(key);
+    total += (key.length + value.length) * 2; // UTF-16 每个字符2字节
   }
+  return total;
 }
 
 export function hasSufficientStorage(requiredSize = 100 * 1024) {
-  const { used, total } = getStorageUsage();
-  return (total - used) > requiredSize;
-}
-
-// 导出日志数据到JSON文件
-export function exportLogsToJson(filename = 'log-d-backup.json') {
-  try {
-    const logs = getLogsFromStorage();
-    if (logs.length === 0) {
-      return { success: false, message: '没有可导出的日志数据' };
-    }
-    
-    const dataStr = JSON.stringify(logs, null, 2);
-    const blob = new Blob([dataStr], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    
-    return { success: true, message: `成功导出 ${logs.length} 条日志` };
-  } catch (error) {
-    console.error('导出日志失败:', error);
-    return { success: false, message: `导出失败: ${error.message}` };
-  }
-}
-
-// 从JSON文件导入日志数据
-export function importLogsFromJson(file, mode = 'merge') {
-  return new Promise((resolve, reject) => {
-    try {
-      const reader = new FileReader();
-      
-      reader.onload = function(e) {
-        try {
-          const importedLogs = JSON.parse(e.target.result);
-          
-          if (!Array.isArray(importedLogs)) {
-            reject({ success: false, message: '导入文件格式错误，不是有效的日志数据' });
-            return;
-          }
-          
-          // 确保每个日志条目都有合法的ID
-          const validatedLogs = importedLogs.map(log => {
-            if (!log.id) log.id = Date.now().toString() + Math.random().toString(36).substr(2, 9);
-            return log;
-          });
-          
-          let currentLogs = getLogsFromStorage();
-          let resultLogs = [];
-          
-          if (mode === 'replace') {
-            // 完全替换当前日志
-            resultLogs = validatedLogs;
-          } else if (mode === 'merge') {
-            // 合并日志，避免ID重复
-            const existingIds = new Set(currentLogs.map(log => log.id));
-            const newLogs = validatedLogs.filter(log => !existingIds.has(log.id));
-            resultLogs = [...currentLogs, ...newLogs];
-            
-            // 按时间戳排序
-            resultLogs.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-          }
-          
-          localStorage.setItem(LOG_STORAGE_KEY, JSON.stringify(resultLogs));
-          
-          resolve({ 
-            success: true, 
-            message: `成功导入 ${validatedLogs.length} 条日志记录`,
-            count: validatedLogs.length
-          });
-        } catch (parseError) {
-          reject({ success: false, message: `解析导入文件失败: ${parseError.message}` });
-        }
-      };
-      
-      reader.onerror = function() {
-        reject({ success: false, message: '读取文件时出错' });
-      };
-      
-      reader.readAsText(file);
-      
-    } catch (error) {
-      reject({ success: false, message: `导入过程出错: ${error.message}` });
-    }
-  });
+  const currentUsage = getStorageUsage();
+  return currentUsage + requiredSize <= STORAGE_LIMIT;
 }
 
 // 提示消息功能
@@ -222,4 +130,57 @@ function getToastIcon(type) {
     case 'warning': return 'fa-exclamation-triangle';
     default: return 'fa-info-circle';
   }
+}
+
+// 显示确认对话框
+export function showConfirmDialog(title, message, confirmCallback, cancelCallback) {
+  const confirmModal = document.getElementById('confirmModal');
+  const confirmTitle = document.getElementById('confirmModalTitle');
+  const confirmMessage = document.getElementById('confirmModalMessage');
+  const confirmButton = document.getElementById('confirmAction');
+  const cancelButton = document.getElementById('confirmCancel');
+  
+  if (!confirmModal || !confirmTitle || !confirmMessage || !confirmButton || !cancelButton) {
+    console.error('确认对话框元素未找到');
+    return;
+  }
+  
+  // 设置对话框内容
+  confirmTitle.textContent = title;
+  confirmMessage.textContent = message;
+  
+  // 移除旧的事件监听器
+  const newConfirmButton = confirmButton.cloneNode(true);
+  const newCancelButton = cancelButton.cloneNode(true);
+  
+  confirmButton.parentNode.replaceChild(newConfirmButton, confirmButton);
+  cancelButton.parentNode.replaceChild(newCancelButton, cancelButton);
+  
+  // 添加新的事件监听器
+  newConfirmButton.addEventListener('click', () => {
+    confirmModal.classList.remove('active');
+    if (typeof confirmCallback === 'function') {
+      confirmCallback();
+    }
+  });
+  
+  newCancelButton.addEventListener('click', () => {
+    confirmModal.classList.remove('active');
+    if (typeof cancelCallback === 'function') {
+      cancelCallback();
+    }
+  });
+  
+  // 点击背景关闭
+  confirmModal.addEventListener('click', (e) => {
+    if (e.target === confirmModal) {
+      confirmModal.classList.remove('active');
+      if (typeof cancelCallback === 'function') {
+        cancelCallback();
+      }
+    }
+  });
+  
+  // 显示确认对话框
+  confirmModal.classList.add('active');
 }
