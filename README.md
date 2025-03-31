@@ -2,5 +2,9 @@
 
 A simple web-based logging application.
 
-BY ucyuunaka
+## TODO
 
+- [ ] 结构模块化
+- [ ] 完善注释
+
+BY ucyuunaka
