@@ -68,11 +68,34 @@
 }
 
 .log-item time {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
   color: var(--accent-color);
   font-size: var(--font-size-sm);
   margin-bottom: var(--space-sm);
   font-weight: 600;
+}
+
+/* 心情图标 */
+.mood-icon {
+  font-size: 1.1em;
+}
+
+.mood-icon.happy {
+  color: #4caf50;
+}
+
+.mood-icon.sad {
+  color: #2196f3;
+}
+
+.mood-icon.angry {
+  color: #f44336;
+}
+
+.mood-icon.excited {
+  color: #ff9800;
 }
 
 .log-content {
@@ -82,22 +105,32 @@
   position: relative;
 }
 
-/* 文本预览样式 */
+/* 文本预览样式 - 优化动画和交互 */
 .text-preview {
   position: relative;
   padding: var(--space-sm) 0;
   overflow: hidden;
-  transition: all 0.5s ease;
-  word-break: break-word; /* 允许在任何字符间断行 */
+  transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+  word-break: break-word;
+  cursor: default;
 }
 
 /* 非展开状态下限制高度 */
 .text-preview.truncated {
   max-height: 250px;
+  cursor: pointer;
+}
+
+/* 增加焦点提示 */
+.text-preview.truncated:hover {
+  background-color: var(--primary-light);
+  border-radius: var(--border-radius-sm);
+  padding-left: var(--space-xs);
+  padding-right: var(--space-xs);
 }
 
 .text-preview.expanded {
-  max-height: none;
+  max-height: 10000px; /* 使用一个足够大的值，实际高度由内容决定 */
 }
 
 .text-preview.truncated::after {
@@ -106,9 +139,18 @@
   bottom: 0;
   left: 0;
   width: 100%;
-  height: 60px;
-  background: linear-gradient(transparent, var(--glass-bg));
+  height: 70px;
+  background: linear-gradient(
+    to bottom,
+    rgba(var(--glass-bg-rgb), 0) 0%,
+    var(--glass-bg) 90%
+  );
   pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.text-preview.expanded::after {
+  opacity: 0;
 }
 
 /* 确保空行正确显示 */
@@ -116,6 +158,111 @@
   display: block;
   content: "";
   margin-top: 0.5em;
+}
+
+/* 展开按钮样式优化 */
+.expand-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  margin: var(--space-sm) 0;
+  padding: var(--space-xs) var(--space-sm);
+  background: var(--primary-light);
+  color: var(--primary-color);
+  border: none;
+  border-radius: var(--border-radius-sm);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  opacity: 0.9;
+}
+
+.expand-btn:hover {
+  opacity: 1;
+  transform: translateY(-2px);
+  background: var(--primary-color);
+  color: white;
+  box-shadow: var(--shadow-sm);
+}
+
+.expand-btn i {
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.expand-btn:hover i {
+  transform: translateY(2px);
+}
+
+.expand-btn.expanded i {
+  transform: rotate(180deg);
+}
+
+/* 文本预览焦点样式 */
+.text-preview:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--primary-color);
+  border-radius: var(--border-radius-sm);
+  padding-left: var(--space-xs);
+  padding-right: var(--space-xs);
+}
+
+/* 加载动画 */
+.text-preview.loading::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(var(--primary-color-rgb), 0.1);
+  z-index: 1;
+}
+
+.text-preview.loading::after {
+  content: "";
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border: 3px solid transparent;
+  border-top-color: var(--primary-color);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  z-index: 2;
+}
+
+@keyframes spin {
+  0% { transform: translate(-50%, -50%) rotate(0deg); }
+  100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+/* 无内容文本样式 */
+.no-text {
+  color: var(--text-tertiary);
+  font-style: italic;
+}
+
+/* 高DPI设备优化 */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .text-preview.truncated::after {
+    height: 80px; /* 更平滑的渐变效果 */
+  }
+}
+
+/* 移动设备优化 */
+@media (max-width: 767px) {
+  .text-preview.truncated {
+    max-height: 150px;
+  }
+  
+  .expand-btn {
+    width: 100%;
+    justify-content: center;
+    padding: var(--space-sm);
+  }
 }
 
 /* 缩略图样式 */
