@@ -661,11 +661,8 @@ class EventHandlers {
       textPreview.classList.toggle('expanded');
       expandButton.classList.toggle('expanded');
       
-      // 更新按钮文本和图标
-      if (isExpanded) {
-        expandButton.innerHTML = '更多内容 <i class="fas fa-chevron-down"></i>';
-        expandButton.setAttribute('data-action', 'expand');
-      } else {
+      // 更新按钮文本和图标 - 修复：使用切换后的状态，所以要用!isExpanded
+      if (!isExpanded) { // 现在是展开状态
         expandButton.innerHTML = '收起内容 <i class="fas fa-chevron-up"></i>';
         expandButton.setAttribute('data-action', 'collapse');
         
@@ -673,6 +670,9 @@ class EventHandlers {
         setTimeout(() => {
           textPreview.scrollIntoView({behavior: 'smooth', block: 'start'});
         }, 100);
+      } else { // 现在是折叠状态
+        expandButton.innerHTML = '更多内容 <i class="fas fa-chevron-down"></i>';
+        expandButton.setAttribute('data-action', 'expand');
       }
     }
   }
