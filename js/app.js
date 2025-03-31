@@ -150,7 +150,7 @@ class App {
     // 全屏编辑功能
     this.dom.editorFullscreen?.addEventListener('click', this.toggleFullscreenEditor.bind(this));
     
-    // 模板按钮
+    // 快速模板按钮
     this.dom.quickTemplate?.addEventListener('click', () => {
       const templatesModal = document.getElementById('templatesModal');
       templatesModal.classList.add('active');
@@ -160,14 +160,16 @@ class App {
         templatesModal.classList.remove('active');
       });
       
-      // 点击模板应用
-      document.querySelectorAll('.template-item')?.forEach(item => {
-        item.addEventListener('click', (e) => {
-          const templateType = e.currentTarget.dataset.template;
+      // 使用事件委托处理模板项点击
+      templatesModal.addEventListener('click', (e) => {
+        // 找到被点击的模板项或其父元素
+        const templateItem = e.target.closest('.template-item');
+        if (templateItem) {
+          const templateType = templateItem.dataset.template;
           this.applyTemplate(templateType);
           templatesModal.classList.remove('active');
-        });
-      });
+        }
+      }, { once: true }); // 使用 once 选项避免重复绑定
     });
     
     // 主题切换
@@ -300,16 +302,15 @@ class App {
   // 应用模板
   applyTemplate(templateType) {
     const templates = {
-      daily: `# ${new Date().toLocaleDateString('zh-CN')} 日记\n\n今天的主要事项：\n- \n\n收获与感悟：\n\n明天计划：\n- `,
-      gratitude: `# 感恩记录\n\n今天，我要感谢：\n\n1. \n2. \n3. \n\n这些人/事物给我带来的影响：\n\n`,
-      idea: `# 创意记录\n\n灵感描述：\n\n可能的应用场景：\n\n后续行动计划：\n- `,
-      travel: `# ${new Date().toLocaleDateString('zh-CN')} 旅行笔记\n\n地点：\n\n见闻：\n\n感受：\n\n值得推荐：\n- `
+      completed: `# 已完成\n\n${new Date().toLocaleDateString('zh-CN')}\n\n- \n- \n- \n\n完成感想：\n\n`,
+      todo: `# 待完成\n\n优先级高：\n- \n- \n\n优先级中：\n- \n- \n\n优先级低：\n- \n- \n\n截止时间：\n\n`,
+      ideas: `# 一点想法\n\n灵感内容：\n\n可能的发展方向：\n\n需要准备的资源：\n- \n`
     };
     
     const template = templates[templateType] || '';
     if(template && stateManager.quill) {
-      stateManager.quill.setText('');
-      stateManager.quill.clipboard.dangerouslyPasteHTML(0, template.replace(/\n/g, '<br>'));
+      stateManager.quill.setText(''); // 清空编辑器
+      stateManager.quill.insertText(0, template); // 直接以纯文本形式插入内容
       this.showToast('已应用模板', 'success');
     }
   }

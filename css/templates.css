@@ -20,6 +20,9 @@
   transition: var(--transition-normal);
   cursor: pointer;
   text-align: center;
+  position: relative;
+  z-index: 10;
+  pointer-events: auto; /* 确保可以接收点击事件 */
 }
 
 .template-item:hover {
@@ -32,16 +35,19 @@
   font-size: 2rem;
   color: var(--primary-color);
   margin-bottom: var(--space-xs);
+  pointer-events: auto; /* 确保子元素也可以接收点击事件 */
 }
 
 .template-item span {
   font-weight: 500;
   color: var(--text-primary);
+  pointer-events: auto; /* 确保子元素也可以接收点击事件 */
 }
 
 .template-item small {
   color: var(--text-tertiary);
   font-size: var(--font-size-xs);
+  pointer-events: auto; /* 确保子元素也可以接收点击事件 */
 }
 
 /* 快捷键样式 */
