@@ -1,0 +1,38 @@
+/* 备份管理相关样式 */
+
+.backups-list {
+  max-height: 300px;
+  overflow-y: auto;
+  margin: var(--space-md) 0;
+  padding-right: var(--space-sm);
+}
+
+.backup-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-md);
+  background: var(--glass-bg);
+  border-radius: var(--border-radius-sm);
+  margin-bottom: var(--space-sm);
+  border: 1px solid var(--glass-border);
+}
+
+.backup-item:hover {
+  border-color: var(--accent-color);
+  background: var(--accent-light);
+}
+
+.backup-actions {
+  display: flex;
+  gap: var(--space-xs);
+}
+
+.empty-backup {
+  text-align: center;
+  padding: var(--space-xl);
+  color: var(--text-tertiary);
+  font-style: italic;
+}
+
+/* 在style.css中添加引用 */

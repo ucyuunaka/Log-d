@@ -348,3 +348,36 @@
   max-width: 300px;
   margin: 0 auto;
 }
+
+/* 标签样式 */
+.log-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+  margin-top: var(--space-sm);
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  font-size: var(--font-size-xs);
+  color: var(--accent-color);
+  background: var(--accent-light);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: var(--transition-normal);
+}
+
+.tag:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+  background: var(--accent-color);
+  color: white;
+}
+
+.tag.active {
+  background: var(--accent-color);
+  color: white;
+  box-shadow: var(--shadow-sm);
+}

@@ -230,6 +230,67 @@ export class ImageManager {
   hasImages() {
     return this.uploadedImages.length > 0;
   }
+
+  // 初始化图片延迟加载
+  initLazyLoading() {
+    // 使用Intersection Observer API监视图片是否进入视口
+    if ('IntersectionObserver' in window) {
+      this.lazyLoadObserver = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const img = entry.target;
+            const dataSrc = img.getAttribute('data-src');
+            
+            if (dataSrc) {
+              // 添加过渡效果，实现渐入显示
+              img.style.opacity = '0';
+              img.onload = () => {
+                img.style.opacity = '1';
+              };
+              
+              img.src = dataSrc;
+              img.removeAttribute('data-src');
+            }
+            
+            observer.unobserve(img);
+          }
+        });
+      }, {
+        rootMargin: '200px 0px' // 提前200px加载
+      });
+      
+      // 延时初始化，确保DOM已渲染完成
+      setTimeout(() => {
+        document.querySelectorAll('img[data-src]').forEach(img => {
+          this.lazyLoadObserver.observe(img);
+        });
+      }, 100);
+    } else {
+      // 回退方案：为不支持IntersectionObserver的浏览器加载所有图片
+      document.querySelectorAll('img[data-src]').forEach(img => {
+        img.src = img.getAttribute('data-src');
+      });
+    }
+  }
+  
+  // 添加懒加载支持的图片渲染
+  renderLazyLoadedImages(log) {
+    if (!log.images?.length) return '';
+    
+    return `
+      <div class="thumbnails">
+        ${log.images.map((img, idx) => `
+          <div class="thumbnail-container">
+            <img data-src="${img}" class="thumbnail lazyload" 
+                 alt="日志图片 ${idx + 1}"
+                 loading="lazy"
+                 data-fullimg="${img}">
+            <div class="thumbnail-placeholder"></div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  }
 }
 
 export default ImageManager;

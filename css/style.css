@@ -18,6 +18,8 @@
 /* 功能模块 */
 @import 'image-upload.css';     /* 图片上传组件 */
 @import 'logs-list.css';        /* 日志列表组件 */
+@import 'backups.css';          /* 备份管理组件 */
+@import 'shortcuts.css';        /* 键盘快捷键 */
 
 /* 全局覆盖样式 */
 

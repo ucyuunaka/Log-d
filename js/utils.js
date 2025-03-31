@@ -137,6 +137,38 @@ export function hasSufficientStorage(requiredSize = 100 * 1024) {
   return currentUsage + requiredSize <= STORAGE_LIMIT;
 }
 
+// 导出日志数据为JSON文件
+export function exportLogsToJSON() {
+  const logs = getLogsFromStorage();
+  const dataStr = JSON.stringify(logs, null, 2);
+  const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+  
+  const exportFileDefaultName = `墨记日志备份_${new Date().toISOString().slice(0,10)}.json`;
+  const linkElement = document.createElement('a');
+  linkElement.setAttribute('href', dataUri);
+  linkElement.setAttribute('download', exportFileDefaultName);
+  linkElement.click();
+}
+
+// 导入日志数据
+export function importLogsFromJSON(file, callback) {
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const logs = JSON.parse(e.target.result);
+      if (Array.isArray(logs)) {
+        localStorage.setItem(LOG_STORAGE_KEY, JSON.stringify(logs));
+        if (callback) callback(true, logs.length);
+      } else {
+        if (callback) callback(false, '导入的文件格式不正确');
+      }
+    } catch (error) {
+      if (callback) callback(false, '解析文件失败');
+    }
+  };
+  reader.readAsText(file);
+}
+
 // 提示消息功能
 export function showToast(message, type = 'info', container) {
   const toast = document.createElement('div');

@@ -2,6 +2,7 @@ import stateManager from './state-manager.js';
 import eventHandlers from './event-handlers.js';
 import { utils, THEME_STORAGE_KEY } from './utils.js';
 import componentLoader from './component-loader.js';
+import backupManager from './backup-manager.js';
 
 // 主应用模块 - 只负责初始化和协调
 class App {
@@ -15,6 +16,9 @@ class App {
       { path: 'components/footer.html', target: '#footer-container' },
       { path: 'components/modals.html', target: '#modals-container' }
     ];
+    
+    // 注册ServiceWorker
+    this.registerServiceWorker();
   }
 
   // 初始化应用
@@ -58,6 +62,9 @@ class App {
     
     // 9. 初始化字数统计
     eventHandlers.updateWordCount();
+    
+    // 初始化备份管理器
+    backupManager.toastContainer = this.dom.toastContainer;
     
     console.log('应用初始化完成');
   }
@@ -246,6 +253,71 @@ class App {
         });
       });
     }
+
+    // 添加恢复备份按钮
+    document.getElementById('showBackups')?.addEventListener('click', async () => {
+      const backupsModal = document.getElementById('backupsModal');
+      const backupsList = document.getElementById('backupsList');
+      
+      try {
+        const backups = await backupManager.getBackupsList();
+        
+        backupsList.innerHTML = backups.length 
+          ? backups.map(backup => `
+              <div class="backup-item">
+                <span>${backup.filename}</span>
+                <div class="backup-actions">
+                  <button class="btn outline btn-sm restore-backup" data-filename="${backup.filename}">
+                    <i class="fas fa-undo"></i> 恢复
+                  </button>
+                  <button class="btn outline btn-sm danger delete-backup" data-filename="${backup.filename}">
+                    <i class="fas fa-trash"></i> 删除
+                  </button>
+                </div>
+              </div>
+            `).join('')
+          : '<div class="empty-backup">没有找到备份记录</div>';
+        
+        backupsModal.classList.add('active');
+        
+        // 绑定恢复备份事件
+        backupsList.querySelectorAll('.restore-backup').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            const filename = btn.dataset.filename;
+            try {
+              await backupManager.restoreFromBackup(filename);
+              backupsModal.classList.remove('active');
+              eventHandlers.loadLogs();
+            } catch (error) {
+              this.showToast(`恢复备份失败: ${error.message}`, 'error');
+            }
+          });
+        });
+        
+        // 绑定删除备份事件
+        backupsList.querySelectorAll('.delete-backup').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            const filename = btn.dataset.filename;
+            try {
+              await backupManager.deleteBackup(filename);
+              btn.closest('.backup-item').remove();
+              this.showToast(`已删除备份: ${filename}`, 'success');
+              
+              // 检查是否还有备份
+              if (backupsList.children.length === 0) {
+                backupsList.innerHTML = '<div class="empty-backup">没有找到备份记录</div>';
+              }
+            } catch (error) {
+              this.showToast(`删除备份失败: ${error.message}`, 'error');
+            }
+          });
+        });
+        
+      } catch (error) {
+        backupsList.innerHTML = '<div class="empty-backup">加载备份失败</div>';
+        console.error('获取备份列表失败:', error);
+      }
+    });
   }
 
   // 获取心情文本标签
@@ -345,6 +417,21 @@ class App {
       case 'error': return 'fa-exclamation-circle';
       case 'warning': return 'fa-exclamation-triangle';
       default: return 'fa-info-circle';
+    }
+  }
+  
+  // 注册ServiceWorker
+  registerServiceWorker() {
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/service-worker.js')
+          .then(registration => {
+            console.log('ServiceWorker注册成功:', registration.scope);
+          })
+          .catch(error => {
+            console.error('ServiceWorker注册失败:', error);
+          });
+      });
     }
   }
 }

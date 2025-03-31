@@ -75,3 +75,22 @@
     </div>
   </div>
 </div>
+
+<!-- 备份管理模态框 -->
+<div id="backupsModal" class="modal">
+  <div class="modal-content card">
+    <h3><i class="fas fa-history"></i> 备份管理</h3>
+    <p class="modal-description">从以下备份中恢复数据或删除旧备份</p>
+    
+    <div id="backupsList" class="backups-list">
+      <!-- 将通过JS动态填充备份列表 -->
+    </div>
+    
+    <div class="modal-actions">
+      <button class="btn outline" id="createBackupBtn">
+        <i class="fas fa-save"></i> 创建新备份
+      </button>
+      <button class="btn outline" id="closeBackupsModal">关闭</button>
+    </div>
+  </div>
+</div>

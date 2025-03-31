@@ -477,17 +477,46 @@ class EventHandlers {
 
   // 创建日志条目
   createLogEntry() {
+    const textContent = stateManager.getEditorText();
+    const htmlContent = stateManager.getEditorHTML();
+    const delta = stateManager.getEditorDelta();
+    const images = stateManager.getImages();
+    const tags = this.extractTags(textContent);
+    
     return {
       id: Date.now().toString(),
       timestamp: new Date().toISOString(),
       displayTime: utils.formatDate(new Date()),
-      textContent: stateManager.getEditorText(),
-      htmlContent: stateManager.getEditorHTML(),
-      delta: stateManager.getEditorDelta(),
-      images: stateManager.getImages(),
-      mood: stateManager.getCurrentMood(), // 确保包含心情
-      searchText: stateManager.getEditorText().toLowerCase()
+      textContent,
+      htmlContent,
+      delta,
+      images,
+      tags,
+      mood: stateManager.getCurrentMood() || 'meh',
+      searchText: textContent.toLowerCase()
     };
+  }
+  
+  // 从文本中提取标签
+  extractTags(text) {
+    const tagRegex = /#([^\s#]+)/g;
+    const matches = text.match(tagRegex);
+    if (!matches) return [];
+    
+    return matches.map(tag => tag.substring(1).toLowerCase());
+  }
+  
+  // 渲染标签
+  renderTags(tags) {
+    if (!tags || !tags.length) return '';
+    
+    return `
+      <div class="log-tags">
+        ${tags.map(tag => `
+          <span class="tag" data-tag="${tag}">#${tag}</span>
+        `).join('')}
+      </div>
+    `;
   }
 
   // 重置编辑器和图片状态
@@ -567,6 +596,7 @@ class EventHandlers {
         <div class="log-content">
           ${this.renderTextContent(log)}
           ${this.renderImages(log)}
+          ${this.renderTags(log.tags || [])}
         </div>
         <div class="log-actions">
           <button class="btn outline">

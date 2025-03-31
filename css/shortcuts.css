@@ -1,0 +1,93 @@
+/* 键盘快捷键样式 */
+
+.shortcuts-help {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 320px;
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  border-radius: var(--border-radius);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-lg);
+  padding: var(--space-md);
+  z-index: 1000;
+  transform: translateY(150%);
+  transition: transform 0.4s cubic-bezier(0.17, 0.67, 0.3, 1.33);
+  overflow: hidden;
+}
+
+.shortcuts-help.active {
+  transform: translateY(0);
+}
+
+.shortcuts-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-md);
+  padding-bottom: var(--space-sm);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.shortcuts-header h3 {
+  font-size: var(--font-size-md);
+  color: var(--primary-color);
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  margin: 0;
+}
+
+.close-shortcuts {
+  background: transparent;
+  border: none;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: var(--transition-normal);
+}
+
+.close-shortcuts:hover {
+  color: var(--accent-color);
+  background: var(--accent-light);
+  transform: rotate(90deg);
+}
+
+.shortcuts-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.shortcut-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--border-radius-sm);
+}
+
+.shortcut-item:hover {
+  background: var(--primary-light);
+}
+
+.key-combo {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.key-desc {
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+/* 更新 style.css 以引入快捷键样式 */
