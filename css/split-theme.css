@@ -1,0 +1,99 @@
+/* 黑白拼接主题模块 */
+
+/* 基于位置的文本颜色自适应 */
+.adapt-text {
+  position: relative;
+  z-index: 2;
+}
+
+/* 对于左上区域的元素，使用白色文本 */
+.adapt-text-light {
+  color: var(--accent-color);
+}
+
+/* 对于右下区域的元素，使用黑色文本 */
+.adapt-text-dark {
+  color: var(--primary-color);
+}
+
+/* 卡片样式调整 */
+.card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--border-color);
+}
+
+/* 黑白区域的卡片样式差异化 */
+.card.dark-zone {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.card.light-zone {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+/* 按钮样式 - 黑白极简 */
+.btn {
+  border: 1px solid var(--border-color);
+}
+
+.btn-primary {
+  background: #000000;
+  color: #ffffff;
+}
+
+.btn-secondary {
+  background: #ffffff;
+  color: #000000;
+  border: 1px solid #000000;
+}
+
+/* 响应式分界线调整 */
+@media (max-width: 768px) {
+  body {
+    /* 在移动设备上调整分界线角度，使其更明显 */
+    background-image: 
+      linear-gradient(120deg, #000000 0%, #000000 49.9%, #ffffff 50.1%, #ffffff 100%);
+  }
+}
+
+/* 高对比度元素 */
+.contrast-box {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--border-radius);
+}
+
+.contrast-box::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, #000000 0%, #000000 49.9%, #ffffff 50.1%, #ffffff 100%);
+  z-index: -1;
+  transform: scale(1.05);
+}
+
+.contrast-box .content {
+  backdrop-filter: blur(4px);
+  padding: var(--space-lg);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* 极简分割线 */
+.divider {
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--border-color), transparent);
+  margin: var(--space-md) 0;
+}
+
+.divider.vertical {
+  width: 1px;
+  height: auto;
+  background: linear-gradient(to bottom, transparent, var(--border-color), transparent);
+  margin: 0 var(--space-md);
+}

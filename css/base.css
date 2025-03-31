@@ -198,12 +198,12 @@ select:focus-visible,
 
 ::-webkit-scrollbar-track {
   background: var(--bg-secondary);
-  border-radius: 8px;
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb {
   background: var(--primary-light);
-  border-radius: 8px;
+  border-radius: 4px;
   transition: var(--transition-normal);
 }
 
@@ -213,7 +213,7 @@ select:focus-visible,
 
 /* 文本选择样式 */
 ::selection {
-  background: var(--accent-light);
+  background: var(--primary-color);
   color: var(--accent-color);
 }
 

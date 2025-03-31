@@ -49,3 +49,65 @@
   /* ...existing code... */
   height: auto; /* 确保卡片高度自适应内容 */
 }
+
+/* 辅助工具类 */
+.text-contrast {
+  mix-blend-mode: difference;
+  color: #ffffff;
+}
+
+/* 根据位置自适应颜色的容器 */
+.adaptive-container {
+  position: relative;
+}
+
+/* 根据背景色自动调整文本颜色 */
+[data-auto-text-color] {
+  position: relative;
+  z-index: 1;
+}
+
+/* 极简风格修饰线 */
+.minimal-line {
+  display: inline-block;
+  width: 24px;
+  height: 2px;
+  background: currentColor;
+  margin: 0 var(--space-sm);
+  vertical-align: middle;
+}
+
+/* 灵活布局扩展 */
+.flex-grid {
+  display: flex;
+  flex-wrap: wrap;
+  margin: calc(-1 * var(--space-sm));
+}
+
+.flex-grid > * {
+  flex: 1 0 300px;
+  margin: var(--space-sm);
+}
+
+/* 极简边距类 */
+.mt-0 { margin-top: 0 !important; }
+.mb-0 { margin-bottom: 0 !important; }
+.m-0 { margin: 0 !important; }
+.p-0 { padding: 0 !important; }
+
+/* 极简状态指示器 */
+.status-indicator {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: var(--space-xs);
+}
+
+.status-active {
+  background-color: var(--success-color);
+}
+
+.status-inactive {
+  background-color: var(--text-tertiary);
+}
